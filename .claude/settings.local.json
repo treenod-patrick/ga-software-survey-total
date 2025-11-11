@@ -41,7 +41,9 @@
       "Bash(node scripts/test_db_connection.js:*)",
       "Bash(node scripts/check_supabase.js:*)",
       "Bash(git remote remove:*)",
-      "Bash(vercel:*)"
+      "Bash(vercel:*)",
+      "Bash(npm run build:*)",
+      "Bash(npx react-scripts build)"
     ],
     "deny": [],
     "ask": []
