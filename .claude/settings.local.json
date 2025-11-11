@@ -1,0 +1,39 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cat:*)",
+      "mcp__sequential-thinking__sequentialthinking",
+      "Bash(npx @supabase/supabase-js@latest --version)",
+      "Bash(curl:*)",
+      "Bash(git clone:*)",
+      "Bash(tree:*)",
+      "Bash(npm install)",
+      "Bash(node -e:*)",
+      "Bash(npm install:*)",
+      "WebFetch(domain:github.com)",
+      "mcp__playwright__playwright_navigate",
+      "WebSearch",
+      "Bash(node analyze_licenses.js:*)",
+      "Bash(npm start)",
+      "Bash(node parse_excel.js:*)",
+      "Bash(node verify_data.js:*)",
+      "Bash(node analyze_csv.js:*)",
+      "Bash(node scripts/setup_supabase_tables.js:*)",
+      "Bash(set \"REACT_APP_SUPABASE_URL=https://adschpldrzwzpzxagxzdw.supabase.co\")",
+      "Bash(set \"SUPABASE_SERVICE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFkc2NocGxkend6cHp4YWd4emR3Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NDg3OTgzNSwiZXhwIjoyMDcwNDU1ODM1fQ.Utd7Xkx04CLORafSMGiNxIdZWZH1uhGTVUrvJkXmiiI\")",
+      "Bash(node scripts/generate_insert_sql.js:*)",
+      "Bash(node scripts/insert_via_api.js:*)",
+      "Bash(node scripts/insert_with_curl.js:*)",
+      "Bash(scriptsinsert_data.bat)",
+      "Bash(powershell.exe -ExecutionPolicy Bypass -File scriptsinsert_data.ps1)",
+      "Bash(powershell.exe -ExecutionPolicy Bypass -File \"D:/development/Software survey/scripts/insert_data.ps1\")",
+      "Bash(node scripts/verify_data.js:*)",
+      "Bash(npx playwright install chromium)",
+      "Bash(npx @playwright/test:*)",
+      "Bash(git init:*)",
+      "Bash(git add:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

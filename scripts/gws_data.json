@@ -1,0 +1,350 @@
+[
+  {
+    "email": "kyoungshin@treenod.com",
+    "is_active": true
+  },
+  {
+    "email": "yujeong@treenod.com",
+    "is_active": true
+  },
+  {
+    "email": "communication@treenod.com",
+    "is_active": true
+  },
+  {
+    "email": "minbeom@treenod.com",
+    "is_active": true
+  },
+  {
+    "email": "gw@treenod.com",
+    "is_active": true
+  },
+  {
+    "email": "lt-totp@treenod.com",
+    "is_active": true
+  },
+  {
+    "email": "ga@treenod.com",
+    "is_active": true
+  },
+  {
+    "email": "support@treenod.com",
+    "is_active": true
+  },
+  {
+    "email": "hr@treenod.com",
+    "is_active": true
+  },
+  {
+    "email": "help@treenod.com",
+    "is_active": true
+  },
+  {
+    "email": "scan@treenod.com",
+    "is_active": true
+  },
+  {
+    "email": "mookwan@treenod.com",
+    "is_active": true
+  },
+  {
+    "email": "sangwan@treenod.com",
+    "is_active": true
+  },
+  {
+    "email": "kakao@treenod.com",
+    "is_active": true
+  },
+  {
+    "email": "sohyun@treenod.com",
+    "is_active": true
+  },
+  {
+    "email": "qa03@treenod.com",
+    "is_active": true
+  },
+  {
+    "email": "hr_info@treenod.com",
+    "is_active": true
+  },
+  {
+    "email": "jueun@treenod.com",
+    "is_active": true
+  },
+  {
+    "email": "globalgames@treenod.com",
+    "is_active": true
+  },
+  {
+    "email": "pokotube@treenod.com",
+    "is_active": true
+  },
+  {
+    "email": "treenod_mkt@treenod.com",
+    "is_active": true
+  },
+  {
+    "email": "appstore@treenod.com",
+    "is_active": true
+  },
+  {
+    "email": "jinmyung@treenod.com",
+    "is_active": true
+  },
+  {
+    "email": "review@treenod.com",
+    "is_active": true
+  },
+  {
+    "email": "hosung@treenod.com",
+    "is_active": true
+  },
+  {
+    "email": "marketing@treenod.com",
+    "is_active": true
+  },
+  {
+    "email": "jihun3@treenod.com",
+    "is_active": true
+  },
+  {
+    "email": "junin@treenod.com",
+    "is_active": true
+  },
+  {
+    "email": "pokopang_billing01@treenod.com",
+    "is_active": true
+  },
+  {
+    "email": "byounggu@treenod.com",
+    "is_active": true
+  },
+  {
+    "email": "jaehoon@treenod.com",
+    "is_active": true
+  },
+  {
+    "email": "cs_agent01@treenod.com",
+    "is_active": true
+  },
+  {
+    "email": "bokyoung@treenod.com",
+    "is_active": true
+  },
+  {
+    "email": "junghyun@treenod.com",
+    "is_active": true
+  },
+  {
+    "email": "jiwon04@treenod.com",
+    "is_active": true
+  },
+  {
+    "email": "yeonghyeon@treenod.com",
+    "is_active": true
+  },
+  {
+    "email": "jiheon@treenod.com",
+    "is_active": true
+  },
+  {
+    "email": "billingqa@treenod.com",
+    "is_active": true
+  },
+  {
+    "email": "hyeon@treenod.com",
+    "is_active": true
+  },
+  {
+    "email": "webpromotion@treenod.com",
+    "is_active": true
+  },
+  {
+    "email": "sujin@treenod.com",
+    "is_active": true
+  },
+  {
+    "email": "kyunghee@treenod.com",
+    "is_active": true
+  },
+  {
+    "email": "youngji02@treenod.com",
+    "is_active": true
+  },
+  {
+    "email": "recruit@treenod.com",
+    "is_active": true
+  },
+  {
+    "email": "jaejung@treenod.com",
+    "is_active": true
+  },
+  {
+    "email": "notice@treenod.com",
+    "is_active": true
+  },
+  {
+    "email": "yungyeong@treenod.com",
+    "is_active": true
+  },
+  {
+    "email": "hyeji2@treenod.com",
+    "is_active": true
+  },
+  {
+    "email": "kihyun02@treenod.com",
+    "is_active": true
+  },
+  {
+    "email": "sina@treenod.com",
+    "is_active": true
+  },
+  {
+    "email": "pokopang_billing02@treenod.com",
+    "is_active": true
+  },
+  {
+    "email": "eunchan@treenod.com",
+    "is_active": true
+  },
+  {
+    "email": "minyong@treenod.com",
+    "is_active": true
+  },
+  {
+    "email": "moonho@treenod.com",
+    "is_active": true
+  },
+  {
+    "email": "qa02@treenod.com",
+    "is_active": true
+  },
+  {
+    "email": "yeji@treenod.com",
+    "is_active": true
+  },
+  {
+    "email": "master@treenod.com",
+    "is_active": true
+  },
+  {
+    "email": "casual_ustest@treenod.com",
+    "is_active": true
+  },
+  {
+    "email": "jaekoo@treenod.com",
+    "is_active": true
+  },
+  {
+    "email": "admin@treenod.com",
+    "is_active": true
+  },
+  {
+    "email": "seongyeon@treenod.com",
+    "is_active": true
+  },
+  {
+    "email": "link@treenod.com",
+    "is_active": true
+  },
+  {
+    "email": "lt-dev@treenod.com",
+    "is_active": true
+  },
+  {
+    "email": "casual_cs@treenod.com",
+    "is_active": true
+  },
+  {
+    "email": "eunji04@treenod.com",
+    "is_active": true
+  },
+  {
+    "email": "woosik@treenod.com",
+    "is_active": true
+  },
+  {
+    "email": "sanghoon@treenod.com",
+    "is_active": true
+  },
+  {
+    "email": "ldap-readonly@treenod.com",
+    "is_active": true
+  },
+  {
+    "email": "kyounghwa03@treenod.com",
+    "is_active": true
+  },
+  {
+    "email": "ahram@treenod.com",
+    "is_active": true
+  },
+  {
+    "email": "hyeonjin2@treenod.com",
+    "is_active": true
+  },
+  {
+    "email": "tech@treenod.com",
+    "is_active": true
+  },
+  {
+    "email": "financeguide@treenod.com",
+    "is_active": true
+  },
+  {
+    "email": "poko_media@treenod.com",
+    "is_active": true
+  },
+  {
+    "email": "ikhoon@treenod.com",
+    "is_active": true
+  },
+  {
+    "email": "jihoon@treenod.com",
+    "is_active": true
+  },
+  {
+    "email": "youngsoo@treenod.com",
+    "is_active": true
+  },
+  {
+    "email": "joonsoo@treenod.com",
+    "is_active": true
+  },
+  {
+    "email": "won02@treenod.com",
+    "is_active": true
+  },
+  {
+    "email": "youngju@treenod.com",
+    "is_active": true
+  },
+  {
+    "email": "gunhyoung@treenod.com",
+    "is_active": true
+  },
+  {
+    "email": "trlegal@treenod.com",
+    "is_active": true
+  },
+  {
+    "email": "qa01@treenod.com",
+    "is_active": true
+  },
+  {
+    "email": "ingyu@treenod.com",
+    "is_active": true
+  },
+  {
+    "email": "contact@treenod.com",
+    "is_active": true
+  },
+  {
+    "email": "heekyung@treenod.com",
+    "is_active": true
+  },
+  {
+    "email": "seungam@treenod.com",
+    "is_active": true
+  }
+]
