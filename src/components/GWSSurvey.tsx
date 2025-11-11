@@ -109,7 +109,7 @@ const GWSSurvey: React.FC = () => {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-        <Header />
+        <Header title="GWS Enterprise 설문조사" />
         <div className="container mx-auto px-4 py-8 flex items-center justify-center min-h-[calc(100vh-80px)]">
           <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
         </div>
@@ -121,7 +121,7 @@ const GWSSurvey: React.FC = () => {
   if (!hasAccess) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-        <Header />
+        <Header title="GWS Enterprise 설문조사" />
         <div className="container mx-auto px-4 py-8">
           <Card className="max-w-2xl mx-auto text-center p-12">
             <AlertCircle className="w-16 h-16 text-yellow-500 mx-auto mb-4" />
@@ -142,7 +142,7 @@ const GWSSurvey: React.FC = () => {
   if (alreadySubmitted || isSubmitted) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-        <Header />
+        <Header title="GWS Enterprise 설문조사" />
         <div className="container mx-auto px-4 py-8">
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}

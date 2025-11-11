@@ -31,7 +31,17 @@
       "Bash(npx playwright install chromium)",
       "Bash(npx @playwright/test:*)",
       "Bash(git init:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git remote add:*)",
+      "Bash(git branch:*)",
+      "Bash(git push:*)",
+      "Bash(gh repo create:*)",
+      "Bash(gh auth:*)",
+      "Bash(node scripts/test_db_connection.js:*)",
+      "Bash(node scripts/check_supabase.js:*)",
+      "Bash(git remote remove:*)",
+      "Bash(vercel:*)"
     ],
     "deny": [],
     "ask": []
