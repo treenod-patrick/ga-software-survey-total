@@ -39,7 +39,7 @@ export const hasAllProductsPack = async (email: string, category: string): Promi
     .eq('category', category)
     .eq('is_all_products_pack', true)
     .eq('is_active', true)
-    .single();
+    .maybeSingle();
 
   if (error && error.code !== 'PGRST116') {
     console.error('Error checking All Products Pack:', error);
@@ -134,7 +134,7 @@ export const hasSubmittedSoftwareSurvey = async (email: string): Promise<boolean
     .from('software_survey_responses')
     .select('id')
     .eq('user_email', email.toLowerCase())
-    .single();
+    .maybeSingle();
 
   if (error && error.code !== 'PGRST116') {
     console.error('Error checking software survey submission:', error);

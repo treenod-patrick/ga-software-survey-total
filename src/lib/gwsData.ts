@@ -12,7 +12,7 @@ export const isUserAssignedToGWS = async (email: string): Promise<boolean> => {
     .select('email')
     .eq('email', email.toLowerCase())
     .eq('is_active', true)
-    .single();
+    .maybeSingle();
 
   if (error) {
     console.error('Error checking GWS assignment:', error);
@@ -89,7 +89,7 @@ export const hasSubmittedGWSSurvey = async (email: string): Promise<boolean> => 
     .from('gws_survey_responses')
     .select('id')
     .eq('user_email', email.toLowerCase())
-    .single();
+    .maybeSingle();
 
   if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
     console.error('Error checking GWS survey submission:', error);

@@ -24,7 +24,7 @@ const HomePage: React.FC = () => {
 
   const handleGWSSurveyStart = () => {
     if (!user) {
-      signInWithGoogle();
+      signInWithGoogle('/gws-survey');
     } else {
       navigate('/gws-survey');
     }
@@ -32,7 +32,7 @@ const HomePage: React.FC = () => {
 
   const handleSoftwareSurveyStart = () => {
     if (!user) {
-      signInWithGoogle();
+      signInWithGoogle('/software-survey');
     } else {
       navigate('/software-survey');
     }
@@ -64,11 +64,10 @@ const HomePage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white dark:from-gray-900 dark:to-gray-800">
+    <div className="min-h-screen bg-gradient-clean dark:bg-secondary-900">
       {/* 헤더 */}
-      <header className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 to-purple-600/10" />
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <header className="relative">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="flex justify-between items-center mb-8">
             <TreenodLogo size="lg" />
             <div className="flex items-center space-x-4">
@@ -94,16 +93,16 @@ const HomePage: React.FC = () => {
           </div>
 
           {/* 메인 히어로 섹션 */}
-          <div className="text-center mb-16">
+          <div className="text-center mb-16 max-w-4xl mx-auto">
             <motion.h1
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
-              className="text-4xl md:text-6xl font-bold text-gray-900 dark:text-white mb-6"
+              className="text-5xl md:text-6xl font-bold text-secondary-900 dark:text-white mb-6 tracking-tight leading-tight"
             >
               소프트웨어
               <br />
-              <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              <span className="text-primary-600 dark:text-primary-500">
                 사용 현황 설문
               </span>
             </motion.h1>
@@ -112,7 +111,7 @@ const HomePage: React.FC = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
-              className="text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-3xl mx-auto"
+              className="text-lg md:text-xl text-secondary-600 dark:text-secondary-400 mb-10 leading-relaxed"
             >
               소프트웨어 사용 현황을 조사하여
               <br />
@@ -127,9 +126,10 @@ const HomePage: React.FC = () => {
                 className="flex flex-col sm:flex-row gap-4 justify-center items-center"
               >
                 <Button
-                  onClick={signInWithGoogle}
+                  onClick={() => signInWithGoogle()}
+                  variant="primary"
                   size="lg"
-                  className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-8 py-4 text-lg font-semibold"
+                  className="min-w-[200px]"
                 >
                   <FileText className="w-5 h-5 mr-2" />
                   설문 시작하기
@@ -140,10 +140,10 @@ const HomePage: React.FC = () => {
                   onClick={handleDashboardAccess}
                   variant="outline"
                   size="lg"
-                  className="px-8 py-4 text-lg font-semibold border-2"
+                  className="min-w-[200px]"
                 >
                   <BarChart3 className="w-5 h-5 mr-2" />
-                  대시보드 접속하기
+                  대시보드 접속
                 </Button>
               </motion.div>
             ) : (
@@ -156,8 +156,9 @@ const HomePage: React.FC = () => {
                 <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
                   <Button
                     onClick={handleGWSSurveyStart}
+                    variant="primary"
                     size="lg"
-                    className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-8 py-4 text-lg font-semibold min-w-[260px]"
+                    className="min-w-[240px]"
                   >
                     <FileText className="w-5 h-5 mr-2" />
                     GWS 설문조사
@@ -166,8 +167,9 @@ const HomePage: React.FC = () => {
 
                   <Button
                     onClick={handleSoftwareSurveyStart}
+                    variant="success"
                     size="lg"
-                    className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-8 py-4 text-lg font-semibold min-w-[260px]"
+                    className="min-w-[240px]"
                   >
                     <FileText className="w-5 h-5 mr-2" />
                     소프트웨어 설문조사
@@ -180,10 +182,9 @@ const HomePage: React.FC = () => {
                     onClick={handleDashboardAccess}
                     variant="outline"
                     size="lg"
-                    className="px-8 py-4 text-lg font-semibold border-2"
                   >
                     <BarChart3 className="w-5 h-5 mr-2" />
-                    대시보드 접속하기
+                    대시보드 접속
                   </Button>
                 </div>
               </motion.div>
@@ -193,21 +194,25 @@ const HomePage: React.FC = () => {
       </header>
 
       {/* 특징 섹션 */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+      <section className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.6 }}
           >
-            <Card className="p-6 text-center h-full" hover>
-              <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                <FileText className="w-8 h-8 text-white" />
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">
+            <Card className="p-10 text-center h-full" hover variant="elevated">
+              <motion.div
+                className="w-20 h-20 bg-primary-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg"
+                whileHover={{ scale: 1.05 }}
+                transition={{ type: "spring", stiffness: 400, damping: 10 }}
+              >
+                <FileText className="w-10 h-10 text-white" />
+              </motion.div>
+              <h3 className="text-2xl font-bold text-secondary-900 dark:text-white mb-4">
                 간편한 설문
               </h3>
-              <p className="text-gray-600 dark:text-gray-300">
+              <p className="text-secondary-600 dark:text-secondary-400 leading-relaxed">
                 할당받은 소프트웨어에 대한 간단하고 직관적인 설문으로
                 사용 현황을 파악합니다.
               </p>
@@ -219,14 +224,18 @@ const HomePage: React.FC = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.8 }}
           >
-            <Card className="p-6 text-center h-full" hover>
-              <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                <BarChart3 className="w-8 h-8 text-white" />
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">
+            <Card className="p-10 text-center h-full" hover variant="elevated">
+              <motion.div
+                className="w-20 h-20 bg-accent-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg"
+                whileHover={{ scale: 1.05 }}
+                transition={{ type: "spring", stiffness: 400, damping: 10 }}
+              >
+                <BarChart3 className="w-10 h-10 text-white" />
+              </motion.div>
+              <h3 className="text-2xl font-bold text-secondary-900 dark:text-white mb-4">
                 실시간 분석
               </h3>
-              <p className="text-gray-600 dark:text-gray-300">
+              <p className="text-secondary-600 dark:text-secondary-400 leading-relaxed">
                 수집된 데이터를 바탕으로 실시간 대시보드를 통해
                 소프트웨어 사용 현황을 분석합니다.
               </p>
@@ -238,14 +247,18 @@ const HomePage: React.FC = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 1.0 }}
           >
-            <Card className="p-6 text-center h-full" hover>
-              <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Users className="w-8 h-8 text-white" />
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">
+            <Card className="p-10 text-center h-full" hover variant="elevated">
+              <motion.div
+                className="w-20 h-20 bg-primary-500 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg"
+                whileHover={{ scale: 1.05 }}
+                transition={{ type: "spring", stiffness: 400, damping: 10 }}
+              >
+                <Users className="w-10 h-10 text-white" />
+              </motion.div>
+              <h3 className="text-2xl font-bold text-secondary-900 dark:text-white mb-4">
                 효율적 관리
               </h3>
-              <p className="text-gray-600 dark:text-gray-300">
+              <p className="text-secondary-600 dark:text-secondary-400 leading-relaxed">
                 사용자별 소프트웨어 할당 현황을 체계적으로 관리하고
                 최적화된 라이선스 배분을 지원합니다.
               </p>
@@ -284,12 +297,12 @@ const HomePage: React.FC = () => {
       </Modal>
 
       {/* 푸터 */}
-      <footer className="bg-gray-50 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="text-center text-gray-600 dark:text-gray-400">
-            <p className="mb-2">© 2025 Software Survey. All rights reserved.</p>
+      <footer className="relative bg-secondary-100 dark:bg-secondary-900 border-t border-secondary-200 dark:border-secondary-800">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <div className="text-center text-secondary-600 dark:text-secondary-400">
+            <p className="mb-2 font-semibold text-secondary-900 dark:text-white">© 2025 Software Survey. All rights reserved.</p>
             <p className="text-sm">
-              소프트웨어 사용 현황 조사를 통해 더 나은 업무 환경을 만들어갑니다.
+              소프트웨어 사용 현황 조사를 통해 <span className="text-primary-600 dark:text-primary-500 font-medium">더 나은 업무 환경</span>을 만들어갑니다.
             </p>
           </div>
         </div>
