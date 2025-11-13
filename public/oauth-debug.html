@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>OAuth Debug Tool</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: monospace; padding: 20px; background: #1a1a1a; color: #0f0; }
+        button { padding: 10px; margin: 10px; background: #333; color: #0f0; border: 1px solid #0f0; cursor: pointer; }
+        button:hover { background: #444; }
+        .log { background: #000; padding: 10px; margin: 10px 0; border: 1px solid #0f0; overflow-x: auto; }
+        .error { color: #f00; }
+        .success { color: #0ff; }
+        .info { color: #ff0; }
+        h2 { color: #0ff; }
+        pre { white-space: pre-wrap; word-wrap: break-word; }
+    </style>
+</head>
+<body>
+    <h1>🔍 OAuth Debug Tool</h1>
+
+    <h2>Supabase Configuration</h2>
+    <div id="config" class="log"></div>
+
+    <h2>Actions</h2>
+    <button onclick="testSupabaseConnection()">Test Supabase Connection</button>
+    <button onclick="testOAuthURLGeneration()">Test OAuth URL Generation</button>
+    <button onclick="attemptGoogleLogin()">Attempt Google Login</button>
+    <button onclick="checkCurrentSession()">Check Current Session</button>
+    <button onclick="clearLogs()">Clear Logs</button>
+
+    <h2>Debug Logs</h2>
+    <div id="logs" class="log"></div>
+
+    <script>
+        const SUPABASE_URL = 'https://adschpldzwzpzxagxzdw.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFkc2NocGxkend6cHp4YWd4emR3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ4Nzk4MzUsImV4cCI6MjA3MDQ1NTgzNX0.194t856wAwJ98C9uP09sd7e63EyRb4v33OnL4vCxaoA';
+
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        function log(message, type = 'info') {
+            const timestamp = new Date().toISOString();
+            const logDiv = document.getElementById('logs');
+            logDiv.innerHTML += `<div class="${type}">[${timestamp}] ${message}</div>`;
+            console.log(`[${type}] ${message}`);
+        }
+
+        function clearLogs() {
+            document.getElementById('logs').innerHTML = '';
+            log('Logs cleared', 'info');
+        }
+
+        // Display configuration
+        document.getElementById('config').innerHTML = `
+            <pre>SUPABASE_URL: ${SUPABASE_URL}
+SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY.substring(0, 50)}...
+Current URL: ${window.location.href}
+Origin: ${window.location.origin}
+Redirect URL: ${window.location.origin}/</pre>
+        `;
+
+        async function testSupabaseConnection() {
+            log('Testing Supabase connection...', 'info');
+            try {
+                const { data, error } = await supabase.auth.getSession();
+                if (error) {
+                    log(`Connection error: ${JSON.stringify(error)}`, 'error');
+                } else {
+                    log('✅ Supabase connection successful', 'success');
+                    log(`Session data: ${JSON.stringify(data)}`, 'info');
+                }
+            } catch (err) {
+                log(`Exception: ${err.message}`, 'error');
+            }
+        }
+
+        async function testOAuthURLGeneration() {
+            log('Testing OAuth URL generation...', 'info');
+            const redirectTo = `${window.location.origin}/`;
+            log(`Redirect URL: ${redirectTo}`, 'info');
+
+            try {
+                // Test with skipBrowserRedirect to see the URL
+                const { data, error } = await supabase.auth.signInWithOAuth({
+                    provider: 'google',
+                    options: {
+                        redirectTo: redirectTo,
+                        skipBrowserRedirect: true
+                    }
+                });
+
+                if (error) {
+                    log(`OAuth URL generation error: ${JSON.stringify(error)}`, 'error');
+                } else {
+                    log('✅ OAuth URL generated successfully', 'success');
+                    log(`OAuth URL: ${data.url}`, 'info');
+
+                    // Parse the URL to show details
+                    try {
+                        const url = new URL(data.url);
+                        log(`Host: ${url.hostname}`, 'info');
+                        log(`Path: ${url.pathname}`, 'info');
+                        log(`Query params:`, 'info');
+                        for (const [key, value] of url.searchParams) {
+                            log(`  ${key}: ${value}`, 'info');
+                        }
+                    } catch (parseErr) {
+                        log(`URL parsing error: ${parseErr.message}`, 'error');
+                    }
+                }
+            } catch (err) {
+                log(`Exception: ${err.message}`, 'error');
+            }
+        }
+
+        async function attemptGoogleLogin() {
+            log('Attempting Google login...', 'info');
+            const redirectTo = `${window.location.origin}/`;
+            log(`Will redirect to: ${redirectTo}`, 'info');
+
+            try {
+                const { data, error } = await supabase.auth.signInWithOAuth({
+                    provider: 'google',
+                    options: {
+                        redirectTo: redirectTo
+                    }
+                });
+
+                if (error) {
+                    log(`Login error: ${JSON.stringify(error)}`, 'error');
+                } else {
+                    log('✅ Redirecting to Google...', 'success');
+                }
+            } catch (err) {
+                log(`Exception: ${err.message}`, 'error');
+            }
+        }
+
+        async function checkCurrentSession() {
+            log('Checking current session...', 'info');
+            try {
+                const { data: { session }, error } = await supabase.auth.getSession();
+                if (error) {
+                    log(`Session check error: ${JSON.stringify(error)}`, 'error');
+                } else if (session) {
+                    log('✅ Active session found', 'success');
+                    log(`User: ${session.user.email}`, 'info');
+                    log(`Provider: ${session.user.app_metadata.provider}`, 'info');
+                } else {
+                    log('No active session', 'info');
+                }
+            } catch (err) {
+                log(`Exception: ${err.message}`, 'error');
+            }
+        }
+
+        // Auto-check on load
+        window.addEventListener('load', () => {
+            log('Page loaded', 'info');
+            testSupabaseConnection();
+        });
+
+        // Listen for auth state changes
+        supabase.auth.onAuthStateChange((event, session) => {
+            log(`Auth state changed: ${event}`, 'info');
+            if (session) {
+                log(`User logged in: ${session.user.email}`, 'success');
+            }
+        });
+    </script>
+</body>
+</html>
