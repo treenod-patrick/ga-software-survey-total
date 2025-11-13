@@ -13,6 +13,7 @@
 .DS_Store
 .env
 .env.local
+.env.production
 .env.development.local
 .env.test.local
 .env.production.local
@@ -22,3 +23,13 @@ yarn-debug.log*
 yarn-error.log*
 
 .vercel
+
+# test files
+public/test-oauth.html
+scripts/test_*.html
+scripts/test_*.js
+scripts/*oauth*.html
+
+# temp files
+nul
+*.tmp

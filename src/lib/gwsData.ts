@@ -51,24 +51,26 @@ export const getAllGWSUsers = async (): Promise<GWSUser[]> => {
 export const submitGWSSurvey = async (
   email: string,
   responses: {
-    department?: string;
-    nickname?: string;
-    usageFrequency?: string;
-    features?: string[];
-    satisfaction?: number;
-    comments?: string;
+    accountType?: string;
+    storageShortage?: string;
+    advancedFeatures?: string[];
+    meetFrequency?: string;
+    largeFiles?: string;
+    enterpriseNecessity?: string;
+    migrationConcerns?: string;
   }
 ) => {
   const { data, error } = await supabase
     .from('gws_survey_responses')
     .insert({
       user_email: email.toLowerCase(),
-      department: responses.department,
-      nickname: responses.nickname,
-      usage_frequency: responses.usageFrequency,
-      features_used: responses.features,
-      satisfaction_rating: responses.satisfaction,
-      additional_comments: responses.comments,
+      account_type: responses.accountType,
+      storage_shortage: responses.storageShortage,
+      advanced_features: responses.advancedFeatures,
+      meet_frequency: responses.meetFrequency,
+      large_files: responses.largeFiles,
+      enterprise_necessity: responses.enterpriseNecessity,
+      migration_concerns: responses.migrationConcerns,
       submitted_at: new Date().toISOString()
     });
 

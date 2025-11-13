@@ -4,24 +4,25 @@ import { Loader2 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 
 interface ButtonProps extends Omit<HTMLMotionProps<"button">, "children"> {
-  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger';
-  size?: 'sm' | 'md' | 'lg';
+  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'success';
+  size?: 'sm' | 'md' | 'lg' | 'xl';
   loading?: boolean;
   children: React.ReactNode;
 }
 
 const variants = {
-  primary: 'bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white shadow-lg hover:shadow-xl',
-  secondary: 'bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 text-gray-900 dark:text-white hover:from-gray-200 hover:to-gray-300 dark:hover:from-gray-600 dark:hover:to-gray-700',
-  outline: 'border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800',
-  ghost: 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800',
-  danger: 'bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white shadow-lg hover:shadow-xl'
+  primary: 'bg-primary-600 hover:bg-primary-700 text-white shadow-sm hover:shadow-md transition-all duration-200',
+  secondary: 'bg-secondary-100 hover:bg-secondary-200 dark:bg-secondary-800 dark:hover:bg-secondary-700 text-secondary-900 dark:text-secondary-100 shadow-sm hover:shadow-md transition-all duration-200',
+  outline: 'border-2 border-secondary-300 dark:border-secondary-600 text-secondary-700 dark:text-secondary-300 hover:bg-secondary-50 dark:hover:bg-secondary-800 hover:border-primary-500 transition-all duration-200',
+  ghost: 'text-secondary-600 dark:text-secondary-400 hover:bg-secondary-100 dark:hover:bg-secondary-800 transition-all duration-200',
+  success: 'bg-accent-700 hover:bg-accent-800 text-white shadow-sm hover:shadow-md transition-all duration-200'
 };
 
 const sizes = {
-  sm: 'px-3 py-1.5 text-sm',
-  md: 'px-4 py-2 text-base',
-  lg: 'px-6 py-3 text-lg'
+  sm: 'px-3 py-1.5 text-sm rounded-lg',
+  md: 'px-5 py-2.5 text-base rounded-xl',
+  lg: 'px-6 py-3 text-lg rounded-xl',
+  xl: 'px-8 py-4 text-xl rounded-2xl'
 };
 
 export const Button: React.FC<ButtonProps> = ({
@@ -35,20 +36,26 @@ export const Button: React.FC<ButtonProps> = ({
 }) => {
   return (
     <motion.button
-      whileHover={{ scale: disabled || loading ? 1 : 1.02 }}
+      whileHover={{ scale: disabled || loading ? 1 : 1.02, y: -2 }}
       whileTap={{ scale: disabled || loading ? 1 : 0.98 }}
       transition={{ type: "spring", stiffness: 400, damping: 17 }}
+      style={{ willChange: 'transform' }}
       className={cn(
-        'relative inline-flex items-center justify-center rounded-lg font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 disabled:opacity-50 disabled:cursor-not-allowed',
+        'relative inline-flex items-center justify-center font-semibold transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 disabled:opacity-50 disabled:cursor-not-allowed group',
         variants[variant],
         sizes[size],
         className
       )}
       disabled={disabled || loading}
+      aria-busy={loading}
+      aria-disabled={disabled || loading}
       {...props}
     >
       {loading && (
-        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+        <>
+          <Loader2 className="w-4 h-4 mr-2 animate-spin" aria-hidden="true" />
+          <span className="sr-only">로딩 중</span>
+        </>
       )}
       {children}
     </motion.button>

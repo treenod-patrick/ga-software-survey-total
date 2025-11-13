@@ -9,17 +9,13 @@ import { Card } from './common/Card';
 import { Button } from './common/Button';
 import { Input } from './common/Input';
 
-const GWS_FEATURES = [
-  'Gmail',
-  'Google Calendar',
-  'Google Drive',
-  'Google Docs',
-  'Google Sheets',
-  'Google Slides',
-  'Google Meet',
-  'Google Chat',
-  'Google Forms',
-  'Google Sites'
+const ADVANCED_FEATURES = [
+  '5TB 이상 대용량 저장소 사용',
+  '파일 버전 관리 / 기록 복원 기능',
+  '고급 보안 설정(2단계 인증 예외, S/MIME, Vault 등)',
+  '구글 밋(Google Meet) 녹화 기능',
+  '외부 사용자와 대용량 파일 공유',
+  '없음 / 잘 모르겠음'
 ];
 
 const GWSSurvey: React.FC = () => {
@@ -32,12 +28,14 @@ const GWSSurvey: React.FC = () => {
   const [alreadySubmitted, setAlreadySubmitted] = useState(false);
 
   // Form states
-  const [department, setDepartment] = useState('');
-  const [nickname, setNickname] = useState('');
-  const [usageFrequency, setUsageFrequency] = useState('');
+  const [accountType, setAccountType] = useState('');
+  const [storageShortage, setStorageShortage] = useState('');
   const [selectedFeatures, setSelectedFeatures] = useState<string[]>([]);
-  const [satisfaction, setSatisfaction] = useState(5);
-  const [comments, setComments] = useState('');
+  const [meetFrequency, setMeetFrequency] = useState('');
+  const [largeFiles, setLargeFiles] = useState('');
+  const [enterpriseNecessity, setEnterpriseNecessity] = useState('');
+  const [migrationConcerns, setMigrationConcerns] = useState('');
+  const [confirmation, setConfirmation] = useState(false);
 
   // Submit states
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -82,18 +80,23 @@ const GWSSurvey: React.FC = () => {
     e.preventDefault();
 
     if (!user?.email) return;
+    if (!confirmation) {
+      setError('확인 사항에 체크해주세요.');
+      return;
+    }
 
     setIsSubmitting(true);
     setError(null);
 
     try {
       await submitGWSSurvey(user.email, {
-        department,
-        nickname,
-        usageFrequency,
-        features: selectedFeatures,
-        satisfaction,
-        comments
+        accountType,
+        storageShortage,
+        advancedFeatures: selectedFeatures,
+        meetFrequency,
+        largeFiles,
+        enterpriseNecessity,
+        migrationConcerns
       });
 
       setIsSubmitted(true);
@@ -177,72 +180,66 @@ const GWSSurvey: React.FC = () => {
         >
           <Card className="p-8">
             <h1 className="text-3xl font-bold mb-2 text-gray-800 dark:text-white">
-              GWS Enterprise 사용 현황 조사
+              GWS Enterprise → Starter 전환 검토 설문조사
             </h1>
             <p className="text-gray-600 dark:text-gray-300 mb-8">
-              Google Workspace Enterprise 사용 현황을 파악하기 위한 설문조사입니다.
+              Google Workspace 계정 최적화를 위해 Enterprise 사용 현황을 확인하고자 합니다. 솔직하게 답변 부탁드립니다.
             </p>
 
             <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Department */}
-              <div>
-                <Input
-                  label="부서"
-                  type="text"
-                  value={department}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setDepartment(e.target.value)}
-                  placeholder="예: 개발팀"
-                  required
-                />
-              </div>
-
-              {/* Nickname */}
-              <div>
-                <Input
-                  label="닉네임"
-                  type="text"
-                  value={nickname}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNickname(e.target.value)}
-                  placeholder="예: 홍길동"
-                  required
-                />
-              </div>
-
-              {/* Usage Frequency */}
+              {/* Question 1: Account Type */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  사용 빈도 <span className="text-red-500">*</span>
+                  1. 현재 본인이 사용하는 구글 계정 유형을 알고 계신가요? <span className="text-red-500">*</span>
                 </label>
                 <select
-                  value={usageFrequency}
-                  onChange={(e) => setUsageFrequency(e.target.value)}
+                  value={accountType}
+                  onChange={(e) => setAccountType(e.target.value)}
                   required
                   className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="">선택해주세요</option>
-                  <option value="daily">매일 사용</option>
-                  <option value="weekly">주 2-3회</option>
-                  <option value="monthly">월 2-3회</option>
-                  <option value="rarely">거의 사용 안함</option>
+                  <option value="enterprise">Enterprise 계정(고급 기능 포함)</option>
+                  <option value="starter">Starter 계정(기본 기능만 사용)</option>
+                  <option value="unknown">잘 모르겠습니다</option>
                 </select>
               </div>
 
-              {/* Features */}
+              {/* Question 2: Storage Shortage */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  2. 평소 Google Drive 저장 공간이 부족하다고 느낀 적이 있나요? <span className="text-red-500">*</span>
+                </label>
+                <select
+                  value={storageShortage}
+                  onChange={(e) => setStorageShortage(e.target.value)}
+                  required
+                  className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">선택해주세요</option>
+                  <option value="frequent">자주 있다 (용량 경고 또는 업로드 제한 경험)</option>
+                  <option value="sometimes">가끔 있다</option>
+                  <option value="never">없다</option>
+                  <option value="unknown">잘 모르겠다</option>
+                </select>
+              </div>
+
+              {/* Question 3: Advanced Features */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                  주로 사용하는 기능 (복수 선택 가능)
+                  3. 아래 기능 중 최근 3개월 내에 실제 사용한 항목을 모두 선택해주세요. (복수 선택 가능)
                 </label>
-                <div className="grid grid-cols-2 gap-3">
-                  {GWS_FEATURES.map((feature) => (
+                <div className="space-y-2">
+                  {ADVANCED_FEATURES.map((feature) => (
                     <label
                       key={feature}
-                      className="flex items-center space-x-2 cursor-pointer"
+                      className="flex items-start space-x-2 cursor-pointer"
                     >
                       <input
                         type="checkbox"
                         checked={selectedFeatures.includes(feature)}
                         onChange={() => handleFeatureToggle(feature)}
-                        className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                        className="w-4 h-4 mt-1 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                       />
                       <span className="text-sm text-gray-700 dark:text-gray-300">
                         {feature}
@@ -252,37 +249,90 @@ const GWSSurvey: React.FC = () => {
                 </div>
               </div>
 
-              {/* Satisfaction */}
+              {/* Question 4: Meet Frequency */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  만족도: {satisfaction}/10
+                  4. Google Meet 사용 빈도는 어느 정도인가요? <span className="text-red-500">*</span>
                 </label>
-                <input
-                  type="range"
-                  min="1"
-                  max="10"
-                  value={satisfaction}
-                  onChange={(e) => setSatisfaction(Number(e.target.value))}
-                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
-                />
-                <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
-                  <span>매우 불만족</span>
-                  <span>매우 만족</span>
-                </div>
+                <select
+                  value={meetFrequency}
+                  onChange={(e) => setMeetFrequency(e.target.value)}
+                  required
+                  className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">선택해주세요</option>
+                  <option value="daily">매일</option>
+                  <option value="2-3times_weekly">주 2~3회</option>
+                  <option value="weekly_or_less">주 1회 이하</option>
+                  <option value="rarely">거의 사용하지 않음</option>
+                </select>
               </div>
 
-              {/* Comments */}
+              {/* Question 5: Large Files */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  추가 의견 (선택사항)
+                  5. Google Drive 내에서 1개 파일 용량이 100GB 이상인 데이터를 다루시나요? <span className="text-red-500">*</span>
+                </label>
+                <select
+                  value={largeFiles}
+                  onChange={(e) => setLargeFiles(e.target.value)}
+                  required
+                  className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">선택해주세요</option>
+                  <option value="yes">예</option>
+                  <option value="no">아니요</option>
+                  <option value="unknown">모르겠다</option>
+                </select>
+              </div>
+
+              {/* Question 6: Enterprise Necessity */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  6. 업무 수행 시 Enterprise 계정의 고급 기능이 꼭 필요하다고 생각하시나요? <span className="text-red-500">*</span>
+                </label>
+                <select
+                  value={enterpriseNecessity}
+                  onChange={(e) => setEnterpriseNecessity(e.target.value)}
+                  required
+                  className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">선택해주세요</option>
+                  <option value="essential">반드시 필요하다 (다운그레이드 시 업무 차질 예상)</option>
+                  <option value="nice_to_have">있으면 좋지만, 없어도 큰 문제는 없다</option>
+                  <option value="not_needed">필요하지 않다 (Starter로 전환 가능)</option>
+                  <option value="unknown">잘 모르겠다</option>
+                </select>
+              </div>
+
+              {/* Question 7: Migration Concerns */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  7. 계정 전환 시 추가 확인이 필요하거나 우려되는 부분이 있다면 자유롭게 적어주세요.
                 </label>
                 <textarea
-                  value={comments}
-                  onChange={(e) => setComments(e.target.value)}
+                  value={migrationConcerns}
+                  onChange={(e) => setMigrationConcerns(e.target.value)}
                   rows={4}
-                  placeholder="개선사항이나 추가 의견을 자유롭게 작성해주세요"
+                  placeholder="우려사항이나 확인이 필요한 내용을 작성해주세요"
                   className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
                 />
+              </div>
+
+              {/* Question 8: Confirmation */}
+              <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+                <label className="flex items-start space-x-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={confirmation}
+                    onChange={(e) => setConfirmation(e.target.checked)}
+                    required
+                    className="w-4 h-4 mt-1 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                  />
+                  <span className="text-sm text-gray-700 dark:text-gray-300">
+                    <span className="text-red-500">*</span> 총무팀이 제출된 내용을 기반으로 Starter 전환 가능성 검토 및 개별 안내를 드릴 예정입니다. 확인하였으며, 검토 후 안내받겠습니다.
+                  </span>
+                </label>
               </div>
 
               {/* Error message */}

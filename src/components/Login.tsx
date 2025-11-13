@@ -21,21 +21,21 @@ const Login: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-white dark:from-gray-900 dark:to-gray-800">
+      <div className="min-h-screen flex items-center justify-center bg-white dark:bg-gray-900">
         <div className="text-center">
           <motion.div
             animate={{ rotate: 360 }}
             transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-            className="w-16 h-16 border-4 border-green-500 border-t-transparent rounded-full mx-auto mb-4"
+            className="w-16 h-16 border-4 border-primary-500 border-t-transparent rounded-full mx-auto mb-4"
           />
-          <p className="text-gray-600 dark:text-gray-400">로그인 상태를 확인하는 중...</p>
+          <p className="text-gray-600 dark:text-gray-300">로그인 상태를 확인하는 중...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-clean dark:bg-secondary-900 relative flex items-center justify-center px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-white dark:bg-gray-900 relative flex items-center justify-center px-4 sm:px-6 lg:px-8">
       {/* 다크모드 토글 버튼 */}
       <motion.button
         initial={{ opacity: 0, scale: 0.8 }}
@@ -72,11 +72,11 @@ const Login: React.FC = () => {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3, duration: 0.6 }}
           >
-            <h1 className="text-4xl md:text-5xl font-bold text-secondary-900 dark:text-white mb-4 tracking-tight">
-              소프트웨어 <span className="text-primary-600 dark:text-primary-500">설문조사</span>
+            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4 tracking-tight">
+              소프트웨어 <span className="text-primary-600 dark:text-primary-400">설문조사</span>
             </h1>
-            <p className="text-lg text-secondary-600 dark:text-secondary-400">
-              효율적인 라이선스 관리를 위한 <span className="text-primary-600 dark:text-primary-500 font-semibold">사용 현황 조사</span>
+            <p className="text-lg text-gray-600 dark:text-gray-300">
+              효율적인 라이선스 관리를 위한 <span className="text-primary-600 dark:text-primary-400 font-semibold">사용 현황 조사</span>
             </p>
           </motion.div>
         </motion.div>
@@ -95,9 +95,9 @@ const Login: React.FC = () => {
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.6 }}
-                  className="flex items-center space-x-4 text-secondary-900 dark:text-white"
+                  className="flex items-center space-x-4 text-gray-900 dark:text-white"
                 >
-                  <div className="w-12 h-12 bg-accent-600 rounded-xl flex items-center justify-center shadow-md">
+                  <div className="w-12 h-12 bg-accent-600 dark:bg-accent-500 rounded-xl flex items-center justify-center shadow-md">
                     <BarChart3 className="w-6 h-6 text-white" />
                   </div>
                   <span className="font-semibold">실시간 사용 현황 분석</span>
@@ -107,9 +107,9 @@ const Login: React.FC = () => {
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.7 }}
-                  className="flex items-center space-x-4 text-secondary-900 dark:text-white"
+                  className="flex items-center space-x-4 text-gray-900 dark:text-white"
                 >
-                  <div className="w-12 h-12 bg-primary-600 rounded-xl flex items-center justify-center shadow-md">
+                  <div className="w-12 h-12 bg-primary-600 dark:bg-primary-500 rounded-xl flex items-center justify-center shadow-md">
                     <Sparkles className="w-6 h-6 text-white" />
                   </div>
                   <span className="font-semibold">맞춤 소프트웨어 관리</span>
@@ -119,9 +119,9 @@ const Login: React.FC = () => {
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.8 }}
-                  className="flex items-center space-x-4 text-secondary-900 dark:text-white"
+                  className="flex items-center space-x-4 text-gray-900 dark:text-white"
                 >
-                  <div className="w-12 h-12 bg-primary-500 rounded-xl flex items-center justify-center shadow-md">
+                  <div className="w-12 h-12 bg-primary-600 dark:bg-primary-500 rounded-xl flex items-center justify-center shadow-md">
                     <Users className="w-6 h-6 text-white" />
                   </div>
                   <span className="font-semibold">개인별 할당 소프트웨어 관리</span>
@@ -129,7 +129,7 @@ const Login: React.FC = () => {
               </div>
 
               {/* 구분선 */}
-              <div className="border-t border-secondary-200 dark:border-secondary-700"></div>
+              <div className="border-t border-gray-200 dark:border-gray-700"></div>
 
               {/* 로그인 버튼 */}
               <motion.div
@@ -160,10 +160,10 @@ const Login: React.FC = () => {
                 transition={{ delay: 1.1 }}
                 className="text-center"
               >
-                <p className="text-sm text-secondary-600 dark:text-secondary-400 leading-relaxed">
+                <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
                   회사 계정으로 로그인해주세요
                   <br />
-                  할당받은 소프트웨어 정보가 <span className="text-primary-600 dark:text-primary-500 font-semibold">자동으로 불러와</span>집니다
+                  할당받은 소프트웨어 정보가 <span className="text-primary-600 dark:text-primary-400 font-semibold">자동으로 불러와</span>집니다
                 </p>
               </motion.div>
             </div>
@@ -177,8 +177,8 @@ const Login: React.FC = () => {
           transition={{ delay: 1.2 }}
           className="text-center"
         >
-          <p className="text-sm text-secondary-600 dark:text-secondary-400">
-            설문 완료까지 약 <span className="text-primary-600 dark:text-primary-500 font-semibold">2-3분</span> 소요됩니다
+          <p className="text-sm text-gray-600 dark:text-gray-300">
+            설문 완료까지 약 <span className="text-primary-600 dark:text-primary-400 font-semibold">2-3분</span> 소요됩니다
           </p>
         </motion.div>
       </div>

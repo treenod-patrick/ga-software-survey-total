@@ -7,30 +7,42 @@ interface CardProps {
   className?: string;
   hover?: boolean;
   gradient?: boolean;
+  variant?: 'default' | 'elevated' | 'flat';
   onClick?: () => void;
 }
+
+const variants = {
+  default: 'bg-white dark:bg-gray-800 shadow-soft border border-gray-200 dark:border-gray-700',
+  elevated: 'bg-white dark:bg-gray-800 shadow-lg border border-gray-100 dark:border-gray-700',
+  flat: 'bg-gray-50 dark:bg-gray-900 shadow-none border border-gray-200 dark:border-gray-800'
+};
 
 export const Card: React.FC<CardProps> = ({
   children,
   className,
   hover = false,
   gradient = false,
+  variant = 'default',
   onClick
 }) => {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-      whileHover={hover ? { scale: 1.02, y: -4 } : undefined}
+      transition={{ duration: 0.4, ease: "easeOut" }}
+      whileHover={hover ? {
+        scale: 1.02,
+        y: -4,
+        transition: { duration: 0.2 }
+      } : undefined}
+      style={hover ? { willChange: 'transform' } : undefined}
       onClick={onClick}
       className={cn(
-        'rounded-xl shadow-lg backdrop-blur-sm border border-gray-200/20 dark:border-gray-700/30',
+        'rounded-xl transition-all duration-200',
         gradient
-          ? 'bg-gradient-to-br from-white/90 to-gray-50/90 dark:from-gray-800/90 dark:to-gray-900/90'
-          : 'bg-white/90 dark:bg-gray-800/90',
-        hover && 'cursor-pointer transition-all duration-300',
-        'dark:shadow-gray-900/20',
+          ? 'bg-gradient-subtle dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-soft'
+          : variants[variant],
+        hover && 'cursor-pointer hover:shadow-xl hover:border-primary-300 dark:hover:border-primary-500',
         className
       )}
     >
