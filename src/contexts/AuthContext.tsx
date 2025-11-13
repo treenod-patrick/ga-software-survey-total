@@ -46,15 +46,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signInWithGoogle = async (redirectPath: string = "/") => {
     try {
+      // 프로덕션 URL을 명시적으로 설정 (Supabase 허용 목록과 정확히 일치해야 함)
+      const baseUrl = process.env.REACT_APP_BASE_URL || window.location.origin;
+      const redirectUrl = `${baseUrl}${redirectPath}`;
+
+      console.log('🔐 OAuth 리디렉션 URL:', redirectUrl);
+
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}${redirectPath}`
+          redirectTo: redirectUrl
         }
       });
-      if (error) throw error;
+
+      if (error) {
+        console.error('❌ OAuth 오류:', error);
+        throw error;
+      }
     } catch (error) {
       console.error('Google 로그인 오류:', error);
+      alert('로그인 중 오류가 발생했습니다. 관리자에게 문의하세요.');
     }
   };
 
