@@ -10,8 +10,9 @@ import { TreenodLogo } from './common/TreenodLogo';
 import { Modal } from './common/Modal';
 
 const ADMIN_EMAILS = [
-  'admin@example.com',
-  // Add admin emails here
+  'jonghyun@treenod.com',
+  'seungam@treenod.com',
+  'minho03@treenod.com'
 ];
 
 const HomePage: React.FC = () => {
@@ -50,33 +51,47 @@ const HomePage: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-white dark:from-gray-900 dark:to-gray-800">
+      <div className="min-h-screen flex items-center justify-center bg-white dark:bg-gray-900">
         <div className="text-center">
           <motion.div
             animate={{ rotate: 360 }}
             transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-            className="w-16 h-16 border-4 border-green-500 border-t-transparent rounded-full mx-auto mb-4"
+            className="w-16 h-16 border-4 border-primary-500 border-t-transparent rounded-full mx-auto mb-4"
           />
-          <p className="text-gray-600 dark:text-gray-400">로딩 중...</p>
+          <p className="text-gray-600 dark:text-gray-300">로딩 중...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-clean dark:bg-secondary-900">
+    <div className="min-h-screen bg-white dark:bg-gray-900">
       {/* 헤더 */}
       <header className="relative">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="flex justify-between items-center mb-8">
             <TreenodLogo size="lg" />
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center gap-3">
               <button
                 onClick={toggleTheme}
                 className="p-2 rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
               >
                 {isDarkMode ? '☀️' : '🌙'}
               </button>
+
+              {/* 관리자 전용 대시보드 버튼 */}
+              {user && isAdmin && (
+                <Button
+                  onClick={handleDashboardAccess}
+                  variant="outline"
+                  size="sm"
+                  className="flex items-center gap-2"
+                >
+                  <BarChart3 className="w-4 h-4" />
+                  대시보드
+                </Button>
+              )}
+
               {user && (
                 <div className="flex items-center space-x-2">
                   <img
@@ -98,11 +113,11 @@ const HomePage: React.FC = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
-              className="text-5xl md:text-6xl font-bold text-secondary-900 dark:text-white mb-6 tracking-tight leading-tight"
+              className="text-5xl md:text-6xl font-bold text-gray-900 dark:text-white mb-6 tracking-tight leading-tight"
             >
               소프트웨어
               <br />
-              <span className="text-primary-600 dark:text-primary-500">
+              <span className="text-primary-600 dark:text-primary-400">
                 사용 현황 설문
               </span>
             </motion.h1>
@@ -111,7 +126,7 @@ const HomePage: React.FC = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
-              className="text-lg md:text-xl text-secondary-600 dark:text-secondary-400 mb-10 leading-relaxed"
+              className="text-lg md:text-xl text-gray-600 dark:text-gray-300 mb-10 leading-relaxed"
             >
               소프트웨어 사용 현황을 조사하여
               <br />
@@ -151,42 +166,29 @@ const HomePage: React.FC = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.4 }}
-                className="space-y-4"
+                className="flex flex-col sm:flex-row gap-6 justify-center items-center"
               >
-                <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-                  <Button
-                    onClick={handleGWSSurveyStart}
-                    variant="primary"
-                    size="lg"
-                    className="min-w-[240px]"
-                  >
-                    <FileText className="w-5 h-5 mr-2" />
-                    GWS 설문조사
-                    <ArrowRight className="w-5 h-5 ml-2" />
-                  </Button>
+                <Button
+                  onClick={handleGWSSurveyStart}
+                  variant="primary"
+                  size="lg"
+                  className="min-w-[280px] py-8 h-auto flex flex-col items-center justify-center gap-3"
+                >
+                  <FileText className="w-8 h-8" />
+                  <span className="text-xl font-bold">GWS 설문조사</span>
+                  <ArrowRight className="w-5 h-5" />
+                </Button>
 
-                  <Button
-                    onClick={handleSoftwareSurveyStart}
-                    variant="success"
-                    size="lg"
-                    className="min-w-[240px]"
-                  >
-                    <FileText className="w-5 h-5 mr-2" />
-                    소프트웨어 설문조사
-                    <ArrowRight className="w-5 h-5 ml-2" />
-                  </Button>
-                </div>
-
-                <div className="flex justify-center">
-                  <Button
-                    onClick={handleDashboardAccess}
-                    variant="outline"
-                    size="lg"
-                  >
-                    <BarChart3 className="w-5 h-5 mr-2" />
-                    대시보드 접속
-                  </Button>
-                </div>
+                <Button
+                  onClick={handleSoftwareSurveyStart}
+                  variant="success"
+                  size="lg"
+                  className="min-w-[280px] py-8 h-auto flex flex-col items-center justify-center gap-3"
+                >
+                  <FileText className="w-8 h-8" />
+                  <span className="text-xl font-bold">소프트웨어 설문조사</span>
+                  <ArrowRight className="w-5 h-5" />
+                </Button>
               </motion.div>
             )}
           </div>
@@ -203,16 +205,16 @@ const HomePage: React.FC = () => {
           >
             <Card className="p-10 text-center h-full" hover variant="elevated">
               <motion.div
-                className="w-20 h-20 bg-primary-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg"
+                className="w-20 h-20 bg-primary-600 dark:bg-primary-500 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg"
                 whileHover={{ scale: 1.05 }}
                 transition={{ type: "spring", stiffness: 400, damping: 10 }}
               >
                 <FileText className="w-10 h-10 text-white" />
               </motion.div>
-              <h3 className="text-2xl font-bold text-secondary-900 dark:text-white mb-4">
+              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
                 간편한 설문
               </h3>
-              <p className="text-secondary-600 dark:text-secondary-400 leading-relaxed">
+              <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
                 할당받은 소프트웨어에 대한 간단하고 직관적인 설문으로
                 사용 현황을 파악합니다.
               </p>
@@ -226,16 +228,16 @@ const HomePage: React.FC = () => {
           >
             <Card className="p-10 text-center h-full" hover variant="elevated">
               <motion.div
-                className="w-20 h-20 bg-accent-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg"
+                className="w-20 h-20 bg-accent-600 dark:bg-accent-500 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg"
                 whileHover={{ scale: 1.05 }}
                 transition={{ type: "spring", stiffness: 400, damping: 10 }}
               >
                 <BarChart3 className="w-10 h-10 text-white" />
               </motion.div>
-              <h3 className="text-2xl font-bold text-secondary-900 dark:text-white mb-4">
+              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
                 실시간 분석
               </h3>
-              <p className="text-secondary-600 dark:text-secondary-400 leading-relaxed">
+              <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
                 수집된 데이터를 바탕으로 실시간 대시보드를 통해
                 소프트웨어 사용 현황을 분석합니다.
               </p>
@@ -249,16 +251,16 @@ const HomePage: React.FC = () => {
           >
             <Card className="p-10 text-center h-full" hover variant="elevated">
               <motion.div
-                className="w-20 h-20 bg-primary-500 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg"
+                className="w-20 h-20 bg-primary-600 dark:bg-primary-500 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg"
                 whileHover={{ scale: 1.05 }}
                 transition={{ type: "spring", stiffness: 400, damping: 10 }}
               >
                 <Users className="w-10 h-10 text-white" />
               </motion.div>
-              <h3 className="text-2xl font-bold text-secondary-900 dark:text-white mb-4">
+              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
                 효율적 관리
               </h3>
-              <p className="text-secondary-600 dark:text-secondary-400 leading-relaxed">
+              <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
                 사용자별 소프트웨어 할당 현황을 체계적으로 관리하고
                 최적화된 라이선스 배분을 지원합니다.
               </p>
@@ -297,12 +299,12 @@ const HomePage: React.FC = () => {
       </Modal>
 
       {/* 푸터 */}
-      <footer className="relative bg-secondary-100 dark:bg-secondary-900 border-t border-secondary-200 dark:border-secondary-800">
+      <footer className="relative bg-gray-50 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="text-center text-secondary-600 dark:text-secondary-400">
-            <p className="mb-2 font-semibold text-secondary-900 dark:text-white">© 2025 Software Survey. All rights reserved.</p>
+          <div className="text-center text-gray-600 dark:text-gray-300">
+            <p className="mb-2 font-semibold text-gray-900 dark:text-white">© 2025 Software Survey. All rights reserved.</p>
             <p className="text-sm">
-              소프트웨어 사용 현황 조사를 통해 <span className="text-primary-600 dark:text-primary-500 font-medium">더 나은 업무 환경</span>을 만들어갑니다.
+              소프트웨어 사용 현황 조사를 통해 <span className="text-primary-600 dark:text-primary-400 font-medium">더 나은 업무 환경</span>을 만들어갑니다.
             </p>
           </div>
         </div>

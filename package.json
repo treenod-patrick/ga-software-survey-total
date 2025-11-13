@@ -4,6 +4,7 @@
   "private": true,
   "dependencies": {
     "@headlessui/react": "^2.2.7",
+    "@playwright/test": "^1.56.1",
     "@supabase/supabase-js": "^2.38.0",
     "@types/node": "^20.0.0",
     "@types/react": "^18.0.0",
@@ -16,6 +17,7 @@
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.8.0",
     "react-scripts": "5.0.1",
+    "recharts": "^3.4.1",
     "typescript": "^4.9.0",
     "web-vitals": "^3.0.0",
     "xlsx": "^0.18.5"
@@ -23,7 +25,7 @@
   "scripts": {
     "start": "react-scripts start",
     "dev": "react-scripts start",
-    "build": "CI=false react-scripts build",
+    "build": "cross-env CI=false react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
@@ -51,6 +53,7 @@
   },
   "devDependencies": {
     "autoprefixer": "^10.4.0",
+    "cross-env": "^10.1.0",
     "postcss": "^8.4.0",
     "tailwindcss": "^3.3.0"
   }

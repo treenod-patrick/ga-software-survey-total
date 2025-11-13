@@ -6,6 +6,8 @@ import Survey from './components/Survey';
 import GWSSurvey from './components/GWSSurvey';
 import SoftwareSurvey from './components/SoftwareSurvey';
 import ProtectedRoute from './components/ProtectedRoute';
+import AdminRoute from './components/AdminRoute';
+import Dashboard from './components/Dashboard';
 import { AuthProvider } from './contexts/AuthContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 
@@ -32,6 +34,11 @@ function App() {
                 <ProtectedRoute>
                   <SoftwareSurvey />
                 </ProtectedRoute>
+              } />
+              <Route path="/dashboard" element={
+                <AdminRoute>
+                  <Dashboard />
+                </AdminRoute>
               } />
             </Routes>
           </div>
