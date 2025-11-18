@@ -216,6 +216,32 @@ const SoftwareSurvey: React.FC = () => {
     return incomplete;
   };
 
+  // 미완료 제품 상세 정보 반환
+  const getIncompleteDetails = (): string[] => {
+    const details: string[] = [];
+    const categoryList = Object.keys(categories);
+
+    for (const category of categoryList) {
+      const selected = selectedProducts[category] || [];
+
+      // 제품 미선택
+      if (selected.length === 0) {
+        details.push(`[${category}] 제품 미선택`);
+        continue;
+      }
+
+      // 선택된 제품의 필수값 미입력
+      for (const product of selected) {
+        const usage = productUsageData[category]?.[product];
+        if (!usage?.frequency) {
+          details.push(`[${category}] ${product}`);
+        }
+      }
+    }
+
+    return details;
+  };
+
   // 특정 카테고리의 완료 상태 확인
   const isCategoryComplete = (category: string): boolean => {
     const selected = selectedProducts[category] || [];
@@ -530,29 +556,52 @@ const SoftwareSurvey: React.FC = () => {
               )}
 
               {/* Submit buttons */}
-              <div className="flex gap-4">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => navigate('/')}
-                  className="flex-1"
-                >
-                  취소
-                </Button>
-                <Button
-                  type="submit"
-                  disabled={!isFormValid() || isSubmitting}
-                  className="flex-1"
-                >
-                  {isSubmitting ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      제출 중...
-                    </>
-                  ) : (
-                    '설문 제출'
-                  )}
-                </Button>
+              <div className="space-y-3">
+                {/* 경고 메시지 - 제출 불가 사유 */}
+                {!isFormValid() && !isSubmitting && (
+                  <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                    <div className="flex items-start gap-2">
+                      <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-sm font-medium text-red-800 dark:text-red-300 mb-2">
+                          선택된 제품의 사용 빈도를 입력해야 제출할 수 있습니다
+                        </p>
+                        {getIncompleteDetails().length > 0 && (
+                          <ul className="text-sm text-red-700 dark:text-red-400 space-y-1">
+                            {getIncompleteDetails().map((detail, idx) => (
+                              <li key={idx}>• {detail}: 사용 빈도 미입력</li>
+                            ))}
+                          </ul>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex gap-4">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => navigate('/')}
+                    className="flex-1"
+                  >
+                    취소
+                  </Button>
+                  <Button
+                    type="submit"
+                    disabled={!isFormValid() || isSubmitting}
+                    className="flex-1"
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        제출 중...
+                      </>
+                    ) : (
+                      '설문 제출'
+                    )}
+                  </Button>
+                </div>
               </div>
             </form>
           </Card>
