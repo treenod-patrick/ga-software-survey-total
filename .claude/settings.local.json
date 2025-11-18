@@ -81,7 +81,17 @@
       "Bash(copy \"트리노드_new_로고_포레스트그린.png\" \"public\\treenod-logo-light.png\")",
       "Bash(copy \"트리노드_new_로고_화이트.png\" \"public\\treenod-logo-dark.png\")",
       "Bash(node scripts/check_gws_table_structure.js:*)",
-      "Bash(node scripts/check_schema_direct.js:*)"
+      "Bash(node scripts/check_schema_direct.js:*)",
+      "Bash(clip:*)",
+      "Bash(start https://supabase.com/dashboard/project/adschpldrzwzpzxagxzdw/sql/new)",
+      "Bash(node:*)",
+      "SlashCommand(/sc:implement)",
+      "Bash(ipconfig:*)",
+      "Bash(npx serve:*)",
+      "Bash(npx http-server:*)",
+      "Bash(npx supabase:*)",
+      "Bash(npx tsc:*)",
+      "Bash(export CI=false)"
     ],
     "deny": [],
     "ask": []

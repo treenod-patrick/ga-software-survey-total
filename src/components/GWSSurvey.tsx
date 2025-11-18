@@ -7,7 +7,6 @@ import { isUserAssignedToGWS, submitGWSSurvey, hasSubmittedGWSSurvey } from '../
 import { Header } from './common/Header';
 import { Card } from './common/Card';
 import { Button } from './common/Button';
-import { Input } from './common/Input';
 
 const ADVANCED_FEATURES = [
   '5TB 이상 대용량 저장소 사용',
