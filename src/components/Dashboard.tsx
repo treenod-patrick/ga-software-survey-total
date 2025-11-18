@@ -12,7 +12,9 @@ interface SurveyResponse {
   software_usage?: any;
   gws_satisfaction?: number;
   gws_feedback?: string;
-  created_at: string;
+  created_at?: string;
+  timestamp?: string;
+  submitted_at?: string;
 }
 
 interface GWSSurveyResponse {
@@ -77,8 +79,8 @@ const Dashboard: React.FC = () => {
         { data: surveyData, error: surveyError },
         { data: gwsSurveyData, error: gwsSurveyError }
       ] = await Promise.all([
-        supabase.from('survey_responses').select('*').order('created_at', { ascending: false }),
-        supabase.from('gws_survey_responses').select('*').order('submitted_at', { ascending: false })
+        supabase.from('survey_responses').select('*'),
+        supabase.from('gws_survey_responses').select('*')
       ]);
 
       if (surveyError) throw surveyError;
@@ -86,6 +88,13 @@ const Dashboard: React.FC = () => {
 
       const surveyResponses = surveyData || [];
       const gwsSurveyResponses = gwsSurveyData || [];
+
+      // 디버그: 실제 컬럼 확인
+      if (surveyResponses.length > 0) {
+        console.log('📊 survey_responses 테이블 컬럼:', Object.keys(surveyResponses[0]));
+        console.log('📊 샘플 데이터:', surveyResponses[0]);
+      }
+
       setResponses(surveyResponses);
 
       // 통계 계산
@@ -116,7 +125,9 @@ const Dashboard: React.FC = () => {
       // 날짜별 응답 수
       const responsesByDateMap: { [key: string]: number } = {};
       surveyResponses.forEach(r => {
-        const date = new Date(r.created_at).toLocaleDateString('ko-KR');
+        // 타임스탬프 필드 찾기 (created_at, timestamp, submitted_at 등)
+        const timestamp = r.created_at || r.timestamp || r.submitted_at || new Date().toISOString();
+        const date = new Date(timestamp).toLocaleDateString('ko-KR');
         responsesByDateMap[date] = (responsesByDateMap[date] || 0) + 1;
       });
 
@@ -141,11 +152,14 @@ const Dashboard: React.FC = () => {
           ? Object.keys(r.software_usage).filter(software => r.software_usage[software])
           : [];
 
+        // 타임스탬프 필드 찾기
+        const timestamp = r.created_at || r.timestamp || r.submitted_at || new Date().toISOString();
+
         return {
           email: r.user_email,
           softwareList,
           softwareCount: softwareList.length,
-          submittedAt: r.created_at
+          submittedAt: timestamp
         };
       }).sort((a, b) => b.softwareCount - a.softwareCount);
 
@@ -838,7 +852,7 @@ const Dashboard: React.FC = () => {
                     <div key={response.id} className="border-l-4 border-blue-400 pl-4 py-2">
                       <p className="text-sm text-gray-600">{response.gws_feedback}</p>
                       <p className="text-xs text-gray-400 mt-1">
-                        {response.user_email} - 만족도: {response.gws_satisfaction}점 - {new Date(response.created_at).toLocaleDateString('ko-KR')}
+                        {response.user_email} - 만족도: {response.gws_satisfaction}점 - {new Date(response.created_at || response.timestamp || response.submitted_at || new Date()).toLocaleDateString('ko-KR')}
                       </p>
                     </div>
                   ))}
@@ -886,7 +900,7 @@ const Dashboard: React.FC = () => {
                         {response.survey_type === 'gws' ? 'GWS' : '소프트웨어'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {new Date(response.created_at).toLocaleString('ko-KR')}
+                        {new Date(response.created_at || response.timestamp || response.submitted_at || new Date()).toLocaleString('ko-KR')}
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-500">
                         {response.survey_type === 'gws'
