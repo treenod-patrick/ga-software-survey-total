@@ -130,10 +130,131 @@ const SoftwareSurvey: React.FC = () => {
     }));
   };
 
+  // 폼 검증: 모든 카테고리의 필수값이 입력되었는지 확인
+  const isFormValid = () => {
+    const categoryList = Object.keys(categories);
+
+    // 디버깅: 검증 시작
+    console.log('🔍 폼 검증 시작');
+    console.log('categories:', categoryList);
+    console.log('selectedProducts:', selectedProducts);
+    console.log('productUsageData:', productUsageData);
+
+    // 카테고리가 없으면 유효하지 않음
+    if (categoryList.length === 0) {
+      console.log('❌ 카테고리가 없습니다');
+      return false;
+    }
+
+    for (const category of categoryList) {
+      const selected = selectedProducts[category] || [];
+      const categoryData = categories[category];
+
+      console.log(`\n📂 카테고리: ${category}`);
+      console.log(`  선택된 제품: ${selected.length}개`, selected);
+      console.log(`  All Products Pack: ${categoryData.hasAllProductsPack}`);
+
+      // All Products Pack 사용자는 최소 1개 선택 필수
+      if (categoryData.hasAllProductsPack && selected.length === 0) {
+        console.log(`  ❌ All Products Pack 사용자인데 제품 미선택`);
+        return false;
+      }
+
+      // 일반 사용자도 선택된 제품이 없으면 안됨
+      if (!categoryData.hasAllProductsPack && selected.length === 0) {
+        console.log(`  ❌ 일반 사용자인데 제품 미선택`);
+        return false;
+      }
+
+      // 선택된 각 제품의 필수 입력값 검증
+      for (const product of selected) {
+        const usage = productUsageData[category]?.[product];
+
+        console.log(`  🔹 제품: ${product}`);
+        console.log(`    사용 정보:`, usage);
+
+        // frequency는 필수
+        if (!usage?.frequency) {
+          console.log(`    ❌ frequency 미입력`);
+          return false;
+        }
+        console.log(`    ✅ frequency: ${usage.frequency}`);
+      }
+
+      console.log(`  ✅ ${category} 카테고리 검증 통과`);
+    }
+
+    console.log('\n✅ 전체 폼 검증 통과');
+    return true;
+  };
+
+  // 미완료 카테고리 목록 반환
+  const getIncompleteTabs = (): string[] => {
+    const incomplete: string[] = [];
+    const categoryList = Object.keys(categories);
+
+    for (const category of categoryList) {
+      const selected = selectedProducts[category] || [];
+      const categoryData = categories[category];
+
+      // 제품 미선택
+      if (selected.length === 0) {
+        incomplete.push(category);
+        continue;
+      }
+
+      // 선택된 제품의 필수값 미입력
+      for (const product of selected) {
+        const usage = productUsageData[category]?.[product];
+        if (!usage?.frequency) {
+          incomplete.push(category);
+          break;
+        }
+      }
+    }
+
+    return incomplete;
+  };
+
+  // 특정 카테고리의 완료 상태 확인
+  const isCategoryComplete = (category: string): boolean => {
+    const selected = selectedProducts[category] || [];
+    const categoryData = categories[category];
+
+    // 제품 미선택
+    if (selected.length === 0) {
+      return false;
+    }
+
+    // 선택된 제품의 필수값 검증
+    for (const product of selected) {
+      const usage = productUsageData[category]?.[product];
+      if (!usage?.frequency) {
+        return false;
+      }
+    }
+
+    return true;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!user?.email) return;
+
+    // 폼 검증
+    if (!isFormValid()) {
+      const incompleteTabs = getIncompleteTabs();
+      setError(
+        `다음 카테고리의 설문을 완료해주세요: ${incompleteTabs.join(', ')}. ` +
+        `모든 제품의 사용 빈도를 선택해야 합니다.`
+      );
+      // 첫 번째 미완료 탭으로 이동
+      if (incompleteTabs.length > 0) {
+        setActiveCategory(incompleteTabs[0]);
+      }
+      return;
+    }
 
     setIsSubmitting(true);
     setError(null);
@@ -242,25 +363,31 @@ const SoftwareSurvey: React.FC = () => {
               {/* Category Tabs */}
               {categoryList.length > 1 && (
                 <div className="flex gap-2 border-b border-gray-200 dark:border-gray-700">
-                  {categoryList.map((category) => (
-                    <button
-                      key={category}
-                      type="button"
-                      onClick={() => setActiveCategory(category)}
-                      className={`px-4 py-2 font-medium transition-colors ${
-                        activeCategory === category
-                          ? 'border-b-2 border-blue-600 text-blue-600 dark:text-blue-400'
-                          : 'text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'
-                      }`}
-                    >
-                      {category}
-                      {categories[category].hasAllProductsPack && (
-                        <span className="ml-2 text-xs bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-300 px-2 py-0.5 rounded">
-                          All Products
-                        </span>
-                      )}
-                    </button>
-                  ))}
+                  {categoryList.map((category) => {
+                    const isComplete = isCategoryComplete(category);
+                    return (
+                      <button
+                        key={category}
+                        type="button"
+                        onClick={() => setActiveCategory(category)}
+                        className={`px-4 py-2 font-medium transition-colors flex items-center gap-2 ${
+                          activeCategory === category
+                            ? 'border-b-2 border-blue-600 text-blue-600 dark:text-blue-400'
+                            : 'text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'
+                        }`}
+                      >
+                        {category}
+                        {categories[category].hasAllProductsPack && (
+                          <span className="text-xs bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-300 px-2 py-0.5 rounded">
+                            All Products
+                          </span>
+                        )}
+                        {!isComplete && (
+                          <AlertCircle className="w-4 h-4 text-red-500" />
+                        )}
+                      </button>
+                    );
+                  })}
                 </div>
               )}
 
@@ -412,7 +539,11 @@ const SoftwareSurvey: React.FC = () => {
                 >
                   취소
                 </Button>
-                <Button type="submit" disabled={isSubmitting} className="flex-1">
+                <Button
+                  type="submit"
+                  disabled={!isFormValid() || isSubmitting}
+                  className="flex-1"
+                >
                   {isSubmitting ? (
                     <>
                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />

@@ -3,7 +3,8 @@ import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { GWSLLMAnalysis } from './GWSLLMAnalysis';
-import { TrendingDown, TrendingUp, DollarSign, AlertCircle } from 'lucide-react';
+import { TrendingDown, TrendingUp, DollarSign, AlertCircle, Users, UserCheck, UserX } from 'lucide-react';
+import { getAllGWSUsers } from '../lib/gwsData';
 
 interface SurveyResponse {
   id: string;
@@ -55,6 +56,20 @@ interface Stats {
     largeFilesUsers: number;
     advancedFeaturesUsage: { feature: string; count: number }[];
   };
+  // GWS 설문 참여 현황
+  gwsParticipation: {
+    total: number;
+    participated: string[];
+    notParticipated: string[];
+    participationRate: number;
+  };
+  // 소프트웨어 설문 참여 현황
+  softwareParticipation: {
+    total: number;
+    participated: string[];
+    notParticipated: string[];
+    participationRate: number;
+  };
 }
 
 const Dashboard: React.FC = () => {
@@ -77,17 +92,27 @@ const Dashboard: React.FC = () => {
       // 병렬로 모든 데이터 가져오기
       const [
         { data: surveyData, error: surveyError },
-        { data: gwsSurveyData, error: gwsSurveyError }
+        { data: gwsSurveyData, error: gwsSurveyError },
+        { data: softwareSurveyData, error: softwareSurveyError },
+        { data: softwareAssignmentsData, error: softwareAssignmentsError },
+        gwsUsers
       ] = await Promise.all([
         supabase.from('survey_responses').select('*'),
-        supabase.from('gws_survey_responses').select('*')
+        supabase.from('gws_survey_responses').select('*'),
+        supabase.from('software_survey_responses').select('user_email'),
+        supabase.from('software_assignments').select('user_email').eq('is_active', true),
+        getAllGWSUsers()
       ]);
 
       if (surveyError) throw surveyError;
       if (gwsSurveyError && gwsSurveyError.code !== 'PGRST116') throw gwsSurveyError;
+      if (softwareSurveyError && softwareSurveyError.code !== 'PGRST116') throw softwareSurveyError;
+      if (softwareAssignmentsError && softwareAssignmentsError.code !== 'PGRST116') throw softwareAssignmentsError;
 
       const surveyResponses = surveyData || [];
       const gwsSurveyResponses = gwsSurveyData || [];
+      const softwareSurveyResponses = softwareSurveyData || [];
+      const softwareAssignments = softwareAssignmentsData || [];
 
       // 디버그: 실제 컬럼 확인
       if (surveyResponses.length > 0) {
@@ -195,6 +220,40 @@ const Dashboard: React.FC = () => {
         advancedFeaturesUsage: Object.entries(advancedFeaturesMap).map(([feature, count]) => ({ feature, count }))
       };
 
+      // GWS 설문 참여 현황 계산
+      const gwsAssignedEmails = gwsUsers.map(u => u.email.toLowerCase());
+      const gwsParticipatedEmails = gwsSurveyResponses.map((r: GWSSurveyResponse) => r.user_email.toLowerCase());
+      const gwsNotParticipated = gwsAssignedEmails.filter(email => !gwsParticipatedEmails.includes(email));
+
+      const gwsParticipation = {
+        total: gwsAssignedEmails.length,
+        participated: gwsParticipatedEmails,
+        notParticipated: gwsNotParticipated,
+        participationRate: gwsAssignedEmails.length > 0
+          ? (gwsParticipatedEmails.length / gwsAssignedEmails.length) * 100
+          : 0
+      };
+
+      // 소프트웨어 설문 참여 현황 계산
+      const softwareAssignedEmails = Array.from(new Set(
+        softwareAssignments.map((a: any) => a.user_email.toLowerCase())
+      ));
+      const softwareParticipatedEmails = Array.from(new Set(
+        softwareSurveyResponses.map((r: any) => r.user_email.toLowerCase())
+      ));
+      const softwareNotParticipated = softwareAssignedEmails.filter(
+        email => !softwareParticipatedEmails.includes(email)
+      );
+
+      const softwareParticipation = {
+        total: softwareAssignedEmails.length,
+        participated: softwareParticipatedEmails,
+        notParticipated: softwareNotParticipated,
+        participationRate: softwareAssignedEmails.length > 0
+          ? (softwareParticipatedEmails.length / softwareAssignedEmails.length) * 100
+          : 0
+      };
+
       setStats({
         totalResponses: surveyResponses.length,
         gwsResponses: gwsResponses.length,
@@ -204,7 +263,9 @@ const Dashboard: React.FC = () => {
         responsesByDate,
         userParticipation,
         userSoftwareDetails,
-        gwsSurveyStats
+        gwsSurveyStats,
+        gwsParticipation,
+        softwareParticipation
       });
 
     } catch (error: any) {
@@ -316,6 +377,105 @@ const Dashboard: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {activeTab === 'overview' && stats && (
           <div className="space-y-6">
+            {/* 설문 참여 현황 카드 */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* GWS 설문 참여 현황 */}
+              <div className="bg-gradient-to-br from-blue-500 to-blue-700 text-white p-6 rounded-lg shadow-lg">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center">
+                    <Users className="w-6 h-6 mr-2" />
+                    <h3 className="text-lg font-bold">GWS 설문 참여 현황</h3>
+                  </div>
+                </div>
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3">
+                    <div className="flex items-center mb-1">
+                      <Users className="w-4 h-4 mr-1" />
+                      <p className="text-xs opacity-90">대상자</p>
+                    </div>
+                    <p className="text-2xl font-bold">{stats.gwsParticipation.total}</p>
+                    <p className="text-xs opacity-75">명</p>
+                  </div>
+                  <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3">
+                    <div className="flex items-center mb-1">
+                      <UserCheck className="w-4 h-4 mr-1" />
+                      <p className="text-xs opacity-90">참여</p>
+                    </div>
+                    <p className="text-2xl font-bold text-green-300">{stats.gwsParticipation.participated.length}</p>
+                    <p className="text-xs opacity-75">명</p>
+                  </div>
+                  <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3">
+                    <div className="flex items-center mb-1">
+                      <UserX className="w-4 h-4 mr-1" />
+                      <p className="text-xs opacity-90">미참여</p>
+                    </div>
+                    <p className="text-2xl font-bold text-red-300">{stats.gwsParticipation.notParticipated.length}</p>
+                    <p className="text-xs opacity-75">명</p>
+                  </div>
+                </div>
+                <div className="mt-4 pt-4 border-t border-white/20">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm opacity-90">참여율</span>
+                    <span className="text-xl font-bold">{stats.gwsParticipation.participationRate.toFixed(1)}%</span>
+                  </div>
+                  <div className="w-full bg-white/20 rounded-full h-2 mt-2">
+                    <div
+                      className="bg-green-300 h-2 rounded-full transition-all"
+                      style={{ width: `${stats.gwsParticipation.participationRate}%` }}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* 소프트웨어 설문 참여 현황 */}
+              <div className="bg-gradient-to-br from-purple-500 to-purple-700 text-white p-6 rounded-lg shadow-lg">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center">
+                    <Users className="w-6 h-6 mr-2" />
+                    <h3 className="text-lg font-bold">소프트웨어 설문 참여 현황</h3>
+                  </div>
+                </div>
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3">
+                    <div className="flex items-center mb-1">
+                      <Users className="w-4 h-4 mr-1" />
+                      <p className="text-xs opacity-90">대상자</p>
+                    </div>
+                    <p className="text-2xl font-bold">{stats.softwareParticipation.total}</p>
+                    <p className="text-xs opacity-75">명</p>
+                  </div>
+                  <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3">
+                    <div className="flex items-center mb-1">
+                      <UserCheck className="w-4 h-4 mr-1" />
+                      <p className="text-xs opacity-90">참여</p>
+                    </div>
+                    <p className="text-2xl font-bold text-green-300">{stats.softwareParticipation.participated.length}</p>
+                    <p className="text-xs opacity-75">명</p>
+                  </div>
+                  <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3">
+                    <div className="flex items-center mb-1">
+                      <UserX className="w-4 h-4 mr-1" />
+                      <p className="text-xs opacity-90">미참여</p>
+                    </div>
+                    <p className="text-2xl font-bold text-red-300">{stats.softwareParticipation.notParticipated.length}</p>
+                    <p className="text-xs opacity-75">명</p>
+                  </div>
+                </div>
+                <div className="mt-4 pt-4 border-t border-white/20">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm opacity-90">참여율</span>
+                    <span className="text-xl font-bold">{stats.softwareParticipation.participationRate.toFixed(1)}%</span>
+                  </div>
+                  <div className="w-full bg-white/20 rounded-full h-2 mt-2">
+                    <div
+                      className="bg-green-300 h-2 rounded-full transition-all"
+                      style={{ width: `${stats.softwareParticipation.participationRate}%` }}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
             {/* 주요 지표 */}
             <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
               <div className="bg-white p-6 rounded-lg shadow">
@@ -422,6 +582,81 @@ const Dashboard: React.FC = () => {
 
         {activeTab === 'software' && stats && (
           <div className="space-y-6">
+            {/* 참여 현황 테이블 */}
+            <div className="bg-white p-6 rounded-lg shadow">
+              <h3 className="text-lg font-medium text-gray-900 mb-4">소프트웨어 설문 참여 현황</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <p className="text-sm text-gray-600 font-medium">전체 대상자</p>
+                  <p className="text-3xl font-bold text-gray-900">{stats.softwareParticipation.total}명</p>
+                </div>
+                <div className="bg-green-50 p-4 rounded-lg">
+                  <p className="text-sm text-green-600 font-medium">참여자</p>
+                  <p className="text-3xl font-bold text-green-900">{stats.softwareParticipation.participated.length}명</p>
+                  <p className="text-xs text-green-600 mt-1">
+                    {stats.softwareParticipation.participationRate.toFixed(1)}% 참여
+                  </p>
+                </div>
+                <div className="bg-red-50 p-4 rounded-lg">
+                  <p className="text-sm text-red-600 font-medium">미참여자</p>
+                  <p className="text-3xl font-bold text-red-900">{stats.softwareParticipation.notParticipated.length}명</p>
+                  <p className="text-xs text-red-600 mt-1">
+                    {(100 - stats.softwareParticipation.participationRate).toFixed(1)}% 미참여
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* 참여자 목록 */}
+                <div>
+                  <h4 className="text-md font-medium text-green-700 mb-3 flex items-center">
+                    <UserCheck className="w-5 h-5 mr-2" />
+                    참여자 ({stats.softwareParticipation.participated.length}명)
+                  </h4>
+                  <div className="bg-green-50 rounded-lg p-4 max-h-96 overflow-y-auto">
+                    {stats.softwareParticipation.participated.length > 0 ? (
+                      <ul className="space-y-2">
+                        {stats.softwareParticipation.participated.map((email, idx) => (
+                          <li key={idx} className="text-sm text-gray-700 flex items-center">
+                            <span className="w-6 h-6 rounded-full bg-green-200 text-green-800 flex items-center justify-center text-xs font-medium mr-2">
+                              {idx + 1}
+                            </span>
+                            {email}
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p className="text-sm text-gray-500">참여자가 없습니다.</p>
+                    )}
+                  </div>
+                </div>
+
+                {/* 미참여자 목록 */}
+                <div>
+                  <h4 className="text-md font-medium text-red-700 mb-3 flex items-center">
+                    <UserX className="w-5 h-5 mr-2" />
+                    미참여자 ({stats.softwareParticipation.notParticipated.length}명)
+                  </h4>
+                  <div className="bg-red-50 rounded-lg p-4 max-h-96 overflow-y-auto">
+                    {stats.softwareParticipation.notParticipated.length > 0 ? (
+                      <ul className="space-y-2">
+                        {stats.softwareParticipation.notParticipated.map((email, idx) => (
+                          <li key={idx} className="text-sm text-gray-700 flex items-center">
+                            <span className="w-6 h-6 rounded-full bg-red-200 text-red-800 flex items-center justify-center text-xs font-medium mr-2">
+                              {idx + 1}
+                            </span>
+                            {email}
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p className="text-sm text-gray-500">모든 대상자가 참여했습니다! 🎉</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+
             {/* 주요 지표 */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
               <div className="bg-white p-6 rounded-lg shadow">
@@ -667,6 +902,81 @@ const Dashboard: React.FC = () => {
 
         {activeTab === 'gws' && stats && (
           <div className="space-y-6">
+            {/* 참여 현황 테이블 */}
+            <div className="bg-white p-6 rounded-lg shadow">
+              <h3 className="text-lg font-medium text-gray-900 mb-4">GWS 설문 참여 현황</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <p className="text-sm text-gray-600 font-medium">전체 대상자</p>
+                  <p className="text-3xl font-bold text-gray-900">{stats.gwsParticipation.total}명</p>
+                </div>
+                <div className="bg-green-50 p-4 rounded-lg">
+                  <p className="text-sm text-green-600 font-medium">참여자</p>
+                  <p className="text-3xl font-bold text-green-900">{stats.gwsParticipation.participated.length}명</p>
+                  <p className="text-xs text-green-600 mt-1">
+                    {stats.gwsParticipation.participationRate.toFixed(1)}% 참여
+                  </p>
+                </div>
+                <div className="bg-red-50 p-4 rounded-lg">
+                  <p className="text-sm text-red-600 font-medium">미참여자</p>
+                  <p className="text-3xl font-bold text-red-900">{stats.gwsParticipation.notParticipated.length}명</p>
+                  <p className="text-xs text-red-600 mt-1">
+                    {(100 - stats.gwsParticipation.participationRate).toFixed(1)}% 미참여
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* 참여자 목록 */}
+                <div>
+                  <h4 className="text-md font-medium text-green-700 mb-3 flex items-center">
+                    <UserCheck className="w-5 h-5 mr-2" />
+                    참여자 ({stats.gwsParticipation.participated.length}명)
+                  </h4>
+                  <div className="bg-green-50 rounded-lg p-4 max-h-96 overflow-y-auto">
+                    {stats.gwsParticipation.participated.length > 0 ? (
+                      <ul className="space-y-2">
+                        {stats.gwsParticipation.participated.map((email, idx) => (
+                          <li key={idx} className="text-sm text-gray-700 flex items-center">
+                            <span className="w-6 h-6 rounded-full bg-green-200 text-green-800 flex items-center justify-center text-xs font-medium mr-2">
+                              {idx + 1}
+                            </span>
+                            {email}
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p className="text-sm text-gray-500">참여자가 없습니다.</p>
+                    )}
+                  </div>
+                </div>
+
+                {/* 미참여자 목록 */}
+                <div>
+                  <h4 className="text-md font-medium text-red-700 mb-3 flex items-center">
+                    <UserX className="w-5 h-5 mr-2" />
+                    미참여자 ({stats.gwsParticipation.notParticipated.length}명)
+                  </h4>
+                  <div className="bg-red-50 rounded-lg p-4 max-h-96 overflow-y-auto">
+                    {stats.gwsParticipation.notParticipated.length > 0 ? (
+                      <ul className="space-y-2">
+                        {stats.gwsParticipation.notParticipated.map((email, idx) => (
+                          <li key={idx} className="text-sm text-gray-700 flex items-center">
+                            <span className="w-6 h-6 rounded-full bg-red-200 text-red-800 flex items-center justify-center text-xs font-medium mr-2">
+                              {idx + 1}
+                            </span>
+                            {email}
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p className="text-sm text-gray-500">모든 대상자가 참여했습니다! 🎉</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+
             {/* 비용 영향 분석 카드 */}
             {stats.gwsSurveyStats.totalResponses > 0 && (
               <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white p-6 rounded-lg shadow-lg">
