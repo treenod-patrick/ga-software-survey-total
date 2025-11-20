@@ -3,7 +3,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { GWSLLMAnalysis } from './GWSLLMAnalysis';
-import { TrendingDown, TrendingUp, DollarSign, AlertCircle, Users, UserCheck, UserX } from 'lucide-react';
+import { TrendingDown, TrendingUp, DollarSign, AlertCircle, Users, UserCheck, UserX, Filter, X } from 'lucide-react';
 import { getAllGWSUsers } from '../lib/gwsData';
 
 interface SurveyResponse {
@@ -80,9 +80,79 @@ const Dashboard: React.FC = () => {
   const [responses, setResponses] = useState<SurveyResponse[]>([]);
   const [activeTab, setActiveTab] = useState<'overview' | 'gws' | 'gws-llm' | 'software' | 'raw'>('overview');
 
+  // 필터 상태
+  const [selectedSoftware, setSelectedSoftware] = useState<string>('');
+  const [selectedFrequency, setSelectedFrequency] = useState<string>('');
+  const [showFilteredResults, setShowFilteredResults] = useState(false);
+  const [filteredUsers, setFilteredUsers] = useState<{email: string; software: string; frequency: string}[]>([]);
+
   useEffect(() => {
     fetchDashboardData();
   }, []);
+
+  // 필터 적용 함수
+  const applyFilter = async () => {
+    if (!selectedSoftware && !selectedFrequency) {
+      alert('소프트웨어 또는 빈도를 선택해주세요.');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const { data: softwareSurveyData, error } = await supabase
+        .from('software_survey_responses')
+        .select('*');
+
+      if (error) throw error;
+
+      const results: {email: string; software: string; frequency: string}[] = [];
+
+      softwareSurveyData?.forEach(response => {
+        if (response.category_responses && Array.isArray(response.category_responses)) {
+          response.category_responses.forEach((categoryResponse: any) => {
+            if (categoryResponse.products && Array.isArray(categoryResponse.products)) {
+              categoryResponse.products.forEach((product: any) => {
+                const productName = typeof product === 'string'
+                  ? product
+                  : (product.product_name || product.name || '');
+                const frequency = typeof product === 'object'
+                  ? (product.frequency || product.usage || 'unknown')
+                  : 'unknown';
+
+                // 필터 조건 확인
+                const matchesSoftware = !selectedSoftware || productName === selectedSoftware;
+                const matchesFrequency = !selectedFrequency || frequency === selectedFrequency;
+
+                if (matchesSoftware && matchesFrequency) {
+                  results.push({
+                    email: response.user_email,
+                    software: productName,
+                    frequency: frequency
+                  });
+                }
+              });
+            }
+          });
+        }
+      });
+
+      setFilteredUsers(results);
+      setShowFilteredResults(true);
+    } catch (error) {
+      console.error('필터링 중 오류:', error);
+      alert('필터링 중 오류가 발생했습니다.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 필터 초기화
+  const resetFilter = () => {
+    setSelectedSoftware('');
+    setSelectedFrequency('');
+    setShowFilteredResults(false);
+    setFilteredUsers([]);
+  };
 
   const fetchDashboardData = async () => {
     try {
@@ -99,7 +169,7 @@ const Dashboard: React.FC = () => {
       ] = await Promise.all([
         supabase.from('survey_responses').select('*'),
         supabase.from('gws_survey_responses').select('*'),
-        supabase.from('software_survey_responses').select('user_email'),
+        supabase.from('software_survey_responses').select('*'),
         supabase.from('software_assignments').select('user_email').eq('is_active', true),
         getAllGWSUsers()
       ]);
@@ -120,25 +190,76 @@ const Dashboard: React.FC = () => {
         console.log('📊 샘플 데이터:', surveyResponses[0]);
       }
 
+      // 디버그: software_survey_responses 테이블 확인
+      console.log('🔍 software_survey_responses 개수:', softwareSurveyResponses.length);
+      if (softwareSurveyResponses.length > 0) {
+        console.log('🔍 software_survey_responses 테이블 컬럼:', Object.keys(softwareSurveyResponses[0]));
+        console.log('🔍 샘플 데이터:', softwareSurveyResponses[0]);
+      } else {
+        console.log('❌ software_survey_responses 테이블이 비어있습니다!');
+        console.log('❌ 에러:', softwareSurveyError);
+      }
+
       setResponses(surveyResponses);
 
       // 통계 계산
       const gwsResponses = surveyResponses.filter(r => r.survey_type === 'gws');
-      const softwareResponses = surveyResponses.filter(r => r.survey_type === 'software');
+
+      // software_survey_responses 테이블에서 소프트웨어 응답 가져오기
+      console.log('✅ software_survey_responses 개수:', softwareSurveyResponses.length);
+
+      // category_responses 배열에서 데이터 추출 (빈도 정보 포함)
+      const softwareResponses = softwareSurveyResponses.map(response => {
+        const products: string[] = [];
+        const productDetails: Array<{name: string; frequency: string; category: string}> = [];
+
+        // category_responses 배열 순회
+        if (response.category_responses && Array.isArray(response.category_responses)) {
+          response.category_responses.forEach((categoryResponse: any) => {
+            if (categoryResponse.products && Array.isArray(categoryResponse.products)) {
+              categoryResponse.products.forEach((product: any) => {
+                if (typeof product === 'string') {
+                  products.push(product);
+                  productDetails.push({
+                    name: product,
+                    frequency: 'unknown',
+                    category: categoryResponse.category_name || 'unknown'
+                  });
+                } else if (typeof product === 'object') {
+                  const productName = product.product_name || product.name || '';
+                  products.push(productName);
+                  productDetails.push({
+                    name: productName,
+                    frequency: product.frequency || product.usage || 'unknown',
+                    category: categoryResponse.category_name || 'unknown'
+                  });
+                }
+              });
+            }
+          });
+        }
+
+        return {
+          user_email: response.user_email,
+          selected_software_list: products,
+          product_details: productDetails,
+          submitted_at: response.submitted_at || response.created_at,
+          category_responses: response.category_responses
+        };
+      });
 
       // GWS 평균 만족도
       const avgGwsSatisfaction = gwsResponses.length > 0
         ? gwsResponses.reduce((sum, r) => sum + (r.gws_satisfaction || 0), 0) / gwsResponses.length
         : 0;
 
-      // 소프트웨어 사용 통계
+      // 소프트웨어 사용 통계 (software_survey_responses 테이블 사용)
       const softwareUsage: { [key: string]: number } = {};
+
       softwareResponses.forEach(r => {
-        if (r.software_usage) {
-          Object.keys(r.software_usage).forEach(software => {
-            if (r.software_usage[software]) {
-              softwareUsage[software] = (softwareUsage[software] || 0) + 1;
-            }
+        if (r.selected_software_list && Array.isArray(r.selected_software_list)) {
+          r.selected_software_list.forEach((software: string) => {
+            softwareUsage[software] = (softwareUsage[software] || 0) + 1;
           });
         }
       });
@@ -171,22 +292,33 @@ const Dashboard: React.FC = () => {
         .sort((a, b) => b.count - a.count)
         .slice(0, 10); // 상위 10명
 
-      // 사용자별 소프트웨어 사용 상세 현황
-      const userSoftwareDetails = softwareResponses.map(r => {
-        const softwareList = r.software_usage
-          ? Object.keys(r.software_usage).filter(software => r.software_usage[software])
-          : [];
+      // 소프트웨어 설문 참여 현황 계산 (먼저 softwareAssignedEmails를 정의)
+      console.log('🔍 software_assignments 개수:', softwareAssignments.length);
+      if (softwareAssignments.length > 0) {
+        console.log('🔍 software_assignments 샘플:', softwareAssignments[0]);
+      }
 
-        // 타임스탬프 필드 찾기
-        const timestamp = r.created_at || r.timestamp || r.submitted_at || new Date().toISOString();
+      const softwareAssignedEmails = Array.from(new Set(
+        softwareAssignments.map((a: any) => a.user_email.toLowerCase())
+      ));
 
-        return {
-          email: r.user_email,
-          softwareList,
-          softwareCount: softwareList.length,
-          submittedAt: timestamp
-        };
-      }).sort((a, b) => b.softwareCount - a.softwareCount);
+      console.log('🔍 대상자 이메일 목록:', softwareAssignedEmails);
+      console.log('🔍 대상자 수:', softwareAssignedEmails.length);
+
+      // 사용자별 소프트웨어 사용 상세 현황 (software_assignments에 있는 사람만)
+      const userSoftwareDetails = softwareResponses
+        .filter(r => softwareAssignedEmails.includes(r.user_email.toLowerCase()))
+        .map(r => {
+          const softwareList = r.selected_software_list || [];
+          const timestamp = r.submitted_at || new Date().toISOString();
+
+          return {
+            email: r.user_email,
+            softwareList,
+            softwareCount: softwareList.length,
+            submittedAt: timestamp
+          };
+        }).sort((a, b) => b.softwareCount - a.softwareCount);
 
       // GWS 설문 통계 계산
       const accountTypesMap: { [key: string]: number } = {};
@@ -234,16 +366,18 @@ const Dashboard: React.FC = () => {
           : 0
       };
 
-      // 소프트웨어 설문 참여 현황 계산
-      const softwareAssignedEmails = Array.from(new Set(
-        softwareAssignments.map((a: any) => a.user_email.toLowerCase())
-      ));
+      // software_survey_responses에서 소프트웨어 응답을 제출한 사용자
       const softwareParticipatedEmails = Array.from(new Set(
-        softwareSurveyResponses.map((r: any) => r.user_email.toLowerCase())
+        softwareResponses.map(r => r.user_email.toLowerCase())
       ));
+
+      console.log('🔍 참여자 이메일 목록:', softwareParticipatedEmails);
+
       const softwareNotParticipated = softwareAssignedEmails.filter(
         email => !softwareParticipatedEmails.includes(email)
       );
+
+      console.log('🔍 미참여자 이메일 목록:', softwareNotParticipated);
 
       const softwareParticipation = {
         total: softwareAssignedEmails.length,
@@ -257,7 +391,7 @@ const Dashboard: React.FC = () => {
       setStats({
         totalResponses: surveyResponses.length,
         gwsResponses: gwsResponses.length,
-        softwareResponses: softwareResponses.length,
+        softwareResponses: softwareResponses.length, // survey_responses 테이블에서 필터링한 소프트웨어 응답
         avgGwsSatisfaction,
         softwareUsageStats,
         responsesByDate,
@@ -582,6 +716,123 @@ const Dashboard: React.FC = () => {
 
         {activeTab === 'software' && stats && (
           <div className="space-y-6">
+            {/* 필터 섹션 */}
+            <div className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white p-6 rounded-lg shadow-lg">
+              <div className="flex items-center mb-4">
+                <Filter className="w-6 h-6 mr-2" />
+                <h3 className="text-xl font-bold">응답 상세 필터</h3>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {/* 소프트웨어 선택 */}
+                <div>
+                  <label className="block text-sm font-medium mb-2">소프트웨어 선택</label>
+                  <select
+                    value={selectedSoftware}
+                    onChange={(e) => setSelectedSoftware(e.target.value)}
+                    className="w-full px-4 py-2 rounded bg-white text-gray-900 border-0 focus:ring-2 focus:ring-purple-300"
+                  >
+                    <option value="">전체</option>
+                    {stats.softwareUsageStats.map((software, idx) => (
+                      <option key={idx} value={software.name}>
+                        {software.name} ({software.count}명)
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* 빈도 선택 */}
+                <div>
+                  <label className="block text-sm font-medium mb-2">사용 빈도</label>
+                  <select
+                    value={selectedFrequency}
+                    onChange={(e) => setSelectedFrequency(e.target.value)}
+                    className="w-full px-4 py-2 rounded bg-white text-gray-900 border-0 focus:ring-2 focus:ring-purple-300"
+                  >
+                    <option value="">전체</option>
+                    <option value="frequent">자주 사용</option>
+                    <option value="sometimes">가끔 사용</option>
+                    <option value="once_or_twice">1~2회 사용</option>
+                    <option value="rarely">거의 사용 안함</option>
+                    <option value="unknown">알 수 없음</option>
+                  </select>
+                </div>
+
+                {/* 필터 버튼 */}
+                <div className="flex items-end space-x-2">
+                  <button
+                    onClick={applyFilter}
+                    disabled={loading}
+                    className="flex-1 px-4 py-2 bg-white text-indigo-600 font-medium rounded hover:bg-gray-100 transition-colors disabled:opacity-50"
+                  >
+                    {loading ? '로딩 중...' : '필터 적용'}
+                  </button>
+                  <button
+                    onClick={resetFilter}
+                    className="px-4 py-2 bg-white/20 hover:bg-white/30 rounded transition-colors"
+                    title="필터 초기화"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
+
+              {/* 필터 결과 표시 */}
+              {showFilteredResults && (
+                <div className="mt-6 bg-white/10 backdrop-blur-sm rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="text-lg font-bold">필터 결과</h4>
+                    <span className="text-sm bg-white/20 px-3 py-1 rounded-full">
+                      총 {filteredUsers.length}건
+                    </span>
+                  </div>
+
+                  {filteredUsers.length > 0 ? (
+                    <div className="max-h-96 overflow-y-auto">
+                      <table className="w-full">
+                        <thead className="bg-white/10 sticky top-0">
+                          <tr>
+                            <th className="px-4 py-2 text-left text-sm font-medium">순번</th>
+                            <th className="px-4 py-2 text-left text-sm font-medium">사용자 이메일</th>
+                            <th className="px-4 py-2 text-left text-sm font-medium">소프트웨어</th>
+                            <th className="px-4 py-2 text-left text-sm font-medium">사용 빈도</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-white/10">
+                          {filteredUsers.map((user, idx) => (
+                            <tr key={idx} className="hover:bg-white/5">
+                              <td className="px-4 py-2 text-sm">{idx + 1}</td>
+                              <td className="px-4 py-2 text-sm font-medium">{user.email}</td>
+                              <td className="px-4 py-2 text-sm">{user.software}</td>
+                              <td className="px-4 py-2 text-sm">
+                                <span className={`inline-block px-2 py-1 rounded text-xs font-medium ${
+                                  user.frequency === 'frequent' ? 'bg-green-400 text-green-900' :
+                                  user.frequency === 'sometimes' ? 'bg-yellow-400 text-yellow-900' :
+                                  user.frequency === 'once_or_twice' ? 'bg-orange-400 text-orange-900' :
+                                  user.frequency === 'rarely' ? 'bg-red-400 text-red-900' :
+                                  'bg-gray-400 text-gray-900'
+                                }`}>
+                                  {user.frequency === 'frequent' ? '자주 사용' :
+                                   user.frequency === 'sometimes' ? '가끔 사용' :
+                                   user.frequency === 'once_or_twice' ? '1~2회 사용' :
+                                   user.frequency === 'rarely' ? '거의 사용 안함' :
+                                   '알 수 없음'}
+                                </span>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  ) : (
+                    <p className="text-center text-sm opacity-75 py-4">
+                      선택한 조건에 해당하는 응답이 없습니다.
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+
             {/* 참여 현황 테이블 */}
             <div className="bg-white p-6 rounded-lg shadow">
               <h3 className="text-lg font-medium text-gray-900 mb-4">소프트웨어 설문 참여 현황</h3>

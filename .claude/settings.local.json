@@ -91,7 +91,11 @@
       "Bash(npx http-server:*)",
       "Bash(npx supabase:*)",
       "Bash(npx tsc:*)",
-      "Bash(export CI=false)"
+      "Bash(export CI=false)",
+      "Bash(npx vercel:*)",
+      "Bash(start https://supabase.com/dashboard/project/adschpldzwzpzxagxzdw/auth/policies)",
+      "Bash(start https://supabase.com/dashboard/project/adschpldzwzpzxagxzdw/sql/new)",
+      "Bash(if not exist \"d:\\development\\Software survey\\.claude\" mkdir \"d:\\development\\Software survey\\.claude\")"
     ],
     "deny": [],
     "ask": []
