@@ -3,6 +3,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { GWSLLMAnalysis } from './GWSLLMAnalysis';
+import { SoftwareLLMAnalysis } from './SoftwareLLMAnalysis';
 import { TrendingDown, TrendingUp, DollarSign, AlertCircle, Users, UserCheck, UserX, Filter, X } from 'lucide-react';
 import { getAllGWSUsers } from '../lib/gwsData';
 
@@ -78,7 +79,7 @@ const Dashboard: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [stats, setStats] = useState<Stats | null>(null);
   const [responses, setResponses] = useState<SurveyResponse[]>([]);
-  const [activeTab, setActiveTab] = useState<'overview' | 'gws' | 'gws-llm' | 'software' | 'raw'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'gws' | 'gws-llm' | 'software' | 'software-llm' | 'raw'>('overview');
 
   // 필터 상태
   const [selectedSoftware, setSelectedSoftware] = useState<string>('');
@@ -486,7 +487,7 @@ const Dashboard: React.FC = () => {
       <div className="bg-white border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex space-x-8">
-            {['overview', 'gws', 'gws-llm', 'software', 'raw'].map(tab => (
+            {['overview', 'gws', 'gws-llm', 'software', 'software-llm', 'raw'].map(tab => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab as any)}
@@ -500,6 +501,7 @@ const Dashboard: React.FC = () => {
                 {tab === 'gws' && 'GWS 설문'}
                 {tab === 'gws-llm' && 'GWS LLM 분석'}
                 {tab === 'software' && '소프트웨어 설문'}
+                {tab === 'software-llm' && '소프트웨어 LLM 분석'}
                 {tab === 'raw' && '원본 데이터'}
               </button>
             ))}
@@ -750,11 +752,10 @@ const Dashboard: React.FC = () => {
                     className="w-full px-4 py-2 rounded bg-white text-gray-900 border-0 focus:ring-2 focus:ring-purple-300"
                   >
                     <option value="">전체</option>
-                    <option value="frequent">자주 사용</option>
-                    <option value="sometimes">가끔 사용</option>
-                    <option value="once_or_twice">1~2회 사용</option>
+                    <option value="daily">매일 사용</option>
+                    <option value="weekly">주 2-3회</option>
+                    <option value="monthly">월 2-3회</option>
                     <option value="rarely">거의 사용 안함</option>
-                    <option value="unknown">알 수 없음</option>
                   </select>
                 </div>
 
@@ -806,15 +807,15 @@ const Dashboard: React.FC = () => {
                               <td className="px-4 py-2 text-sm">{user.software}</td>
                               <td className="px-4 py-2 text-sm">
                                 <span className={`inline-block px-2 py-1 rounded text-xs font-medium ${
-                                  user.frequency === 'frequent' ? 'bg-green-400 text-green-900' :
-                                  user.frequency === 'sometimes' ? 'bg-yellow-400 text-yellow-900' :
-                                  user.frequency === 'once_or_twice' ? 'bg-orange-400 text-orange-900' :
+                                  user.frequency === 'daily' ? 'bg-green-400 text-green-900' :
+                                  user.frequency === 'weekly' ? 'bg-blue-400 text-blue-900' :
+                                  user.frequency === 'monthly' ? 'bg-yellow-400 text-yellow-900' :
                                   user.frequency === 'rarely' ? 'bg-red-400 text-red-900' :
                                   'bg-gray-400 text-gray-900'
                                 }`}>
-                                  {user.frequency === 'frequent' ? '자주 사용' :
-                                   user.frequency === 'sometimes' ? '가끔 사용' :
-                                   user.frequency === 'once_or_twice' ? '1~2회 사용' :
+                                  {user.frequency === 'daily' ? '매일 사용' :
+                                   user.frequency === 'weekly' ? '주 2-3회' :
+                                   user.frequency === 'monthly' ? '월 2-3회' :
                                    user.frequency === 'rarely' ? '거의 사용 안함' :
                                    '알 수 없음'}
                                 </span>
@@ -1424,6 +1425,10 @@ const Dashboard: React.FC = () => {
 
         {activeTab === 'gws-llm' && (
           <GWSLLMAnalysis />
+        )}
+
+        {activeTab === 'software-llm' && (
+          <SoftwareLLMAnalysis />
         )}
 
         {activeTab === 'raw' && (
