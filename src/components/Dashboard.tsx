@@ -931,14 +931,41 @@ const Dashboard: React.FC = () => {
 
             {/* 전체 사용 현황 - 수평 바 차트 */}
             <div className="bg-white p-6 rounded-lg shadow">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">전체 소프트웨어 사용 현황</h3>
-              <ResponsiveContainer width="100%" height={400}>
-                <BarChart data={stats.softwareUsageStats} layout="horizontal">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-medium text-gray-900">전체 소프트웨어 사용 현황</h3>
+                <span className="text-sm text-gray-500">총 {stats.softwareUsageStats.length}개 소프트웨어</span>
+              </div>
+              <ResponsiveContainer width="100%" height={Math.max(400, stats.softwareUsageStats.length * 30)}>
+                <BarChart
+                  data={stats.softwareUsageStats}
+                  layout="vertical"
+                  margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                >
                   <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis type="number" />
-                  <YAxis type="category" dataKey="name" width={150} />
-                  <Tooltip />
-                  <Bar dataKey="count" fill="#00C49F" />
+                  <XAxis
+                    type="number"
+                    label={{ value: '사용자 수 (명)', position: 'insideBottom', offset: -5 }}
+                  />
+                  <YAxis
+                    type="category"
+                    dataKey="name"
+                    width={200}
+                    tick={{ fontSize: 12 }}
+                  />
+                  <Tooltip
+                    formatter={(value: number) => [`${value}명`, '사용자 수']}
+                    labelFormatter={(label) => `소프트웨어: ${label}`}
+                  />
+                  <Bar
+                    dataKey="count"
+                    fill="#00C49F"
+                    radius={[0, 8, 8, 0]}
+                    label={{
+                      position: 'right',
+                      formatter: (value: any) => `${value}명`,
+                      fontSize: 11
+                    }}
+                  />
                 </BarChart>
               </ResponsiveContainer>
             </div>
