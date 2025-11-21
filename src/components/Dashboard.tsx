@@ -111,14 +111,12 @@ const Dashboard: React.FC = () => {
       softwareSurveyData?.forEach(response => {
         if (response.category_responses && Array.isArray(response.category_responses)) {
           response.category_responses.forEach((categoryResponse: any) => {
+            // products 배열과 usageInfo 객체를 함께 사용
             if (categoryResponse.products && Array.isArray(categoryResponse.products)) {
-              categoryResponse.products.forEach((product: any) => {
-                const productName = typeof product === 'string'
-                  ? product
-                  : (product.product_name || product.name || '');
-                const frequency = typeof product === 'object'
-                  ? (product.frequency || product.usage || 'unknown')
-                  : 'unknown';
+              categoryResponse.products.forEach((productName: string) => {
+                // usageInfo에서 실제 빈도 정보 가져오기
+                const usageInfo = categoryResponse.usageInfo?.[productName];
+                const frequency = usageInfo?.frequency || 'unknown';
 
                 // 필터 조건 확인
                 const matchesSoftware = !selectedSoftware || productName === selectedSoftware;
@@ -217,24 +215,21 @@ const Dashboard: React.FC = () => {
         // category_responses 배열 순회
         if (response.category_responses && Array.isArray(response.category_responses)) {
           response.category_responses.forEach((categoryResponse: any) => {
+            const categoryName = categoryResponse.category || 'unknown';
+
             if (categoryResponse.products && Array.isArray(categoryResponse.products)) {
-              categoryResponse.products.forEach((product: any) => {
-                if (typeof product === 'string') {
-                  products.push(product);
-                  productDetails.push({
-                    name: product,
-                    frequency: 'unknown',
-                    category: categoryResponse.category_name || 'unknown'
-                  });
-                } else if (typeof product === 'object') {
-                  const productName = product.product_name || product.name || '';
-                  products.push(productName);
-                  productDetails.push({
-                    name: productName,
-                    frequency: product.frequency || product.usage || 'unknown',
-                    category: categoryResponse.category_name || 'unknown'
-                  });
-                }
+              categoryResponse.products.forEach((productName: string) => {
+                products.push(productName);
+
+                // usageInfo에서 빈도 정보 가져오기
+                const usageInfo = categoryResponse.usageInfo?.[productName];
+                const frequency = usageInfo?.frequency || 'unknown';
+
+                productDetails.push({
+                  name: productName,
+                  frequency: frequency,
+                  category: categoryName
+                });
               });
             }
           });
