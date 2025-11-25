@@ -166,9 +166,10 @@ const HomePage: React.FC = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.4 }}
-                className="flex flex-col sm:flex-row gap-6 justify-center items-center"
+                className="flex justify-center items-center"
               >
-                <Button
+                {/* GWS 설문조사 버튼 - 비활성화 */}
+                {/* <Button
                   onClick={handleGWSSurveyStart}
                   variant="primary"
                   size="lg"
@@ -177,18 +178,29 @@ const HomePage: React.FC = () => {
                   <FileText className="w-8 h-8" />
                   <span className="text-xl font-bold">GWS 설문조사</span>
                   <ArrowRight className="w-5 h-5" />
-                </Button>
+                </Button> */}
 
-                <Button
+                <motion.button
                   onClick={handleSoftwareSurveyStart}
-                  variant="success"
-                  size="lg"
-                  className="min-w-[280px] py-8 h-auto flex flex-col items-center justify-center gap-3"
+                  whileHover={{ y: -4, scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="group relative px-12 py-6 bg-gradient-to-r from-emerald-500 to-teal-600 dark:from-emerald-600 dark:to-teal-700 text-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden"
                 >
-                  <FileText className="w-8 h-8" />
-                  <span className="text-xl font-bold">소프트웨어 설문조사</span>
-                  <ArrowRight className="w-5 h-5" />
-                </Button>
+                  {/* 배경 애니메이션 효과 */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-emerald-600 to-teal-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+
+                  {/* 버튼 내용 */}
+                  <div className="relative flex items-center gap-4">
+                    <div className="flex items-center justify-center w-12 h-12 bg-white/20 rounded-xl backdrop-blur-sm group-hover:bg-white/30 transition-colors duration-300">
+                      <FileText className="w-6 h-6" />
+                    </div>
+                    <div className="flex flex-col items-start">
+                      <span className="text-sm font-medium opacity-90 mb-1">Survey</span>
+                      <span className="text-xl font-bold tracking-tight">소프트웨어 설문조사</span>
+                    </div>
+                    <ArrowRight className="w-5 h-5 ml-4 group-hover:translate-x-1 transition-transform duration-300" />
+                  </div>
+                </motion.button>
               </motion.div>
             )}
           </div>

@@ -95,7 +95,11 @@
       "Bash(npx vercel:*)",
       "Bash(start https://supabase.com/dashboard/project/adschpldzwzpzxagxzdw/auth/policies)",
       "Bash(start https://supabase.com/dashboard/project/adschpldzwzpzxagxzdw/sql/new)",
-      "Bash(if not exist \"d:\\development\\Software survey\\.claude\" mkdir \"d:\\development\\Software survey\\.claude\")"
+      "Bash(if not exist \"d:\\development\\Software survey\\.claude\" mkdir \"d:\\development\\Software survey\\.claude\")",
+      "Bash(.deploy-edge-functions.bat)",
+      "Bash(start cmd /k \"cd /d \"\"D:\\development\\Software survey\"\" && echo ============================================ && echo   Edge Functions 배포를 위한 터미널 && echo ============================================ && echo. && echo 다음 명령어를 순서대로 실행하세요: && echo. && echo 1. npx supabase login && echo 2. npx supabase link --project-ref adschpldzwzpzxagxzdw && echo 3. npx supabase functions deploy software-analyze && echo 4. npx supabase functions deploy gws-analyze && echo. && echo ============================================\")",
+      "Bash(git reset:*)",
+      "Bash(ping:*)"
     ],
     "deny": [],
     "ask": []

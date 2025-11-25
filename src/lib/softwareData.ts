@@ -102,8 +102,9 @@ export const submitSoftwareSurvey = async (
     usageInfo?: {
       [product: string]: {
         frequency?: string;
-        satisfaction?: number;
+        satisfaction?: number; // 더 이상 사용 안함 (기존 데이터 호환성 유지)
         features?: string[];
+        returnIntention?: boolean;
       };
     };
     comments?: string;

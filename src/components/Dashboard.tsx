@@ -192,6 +192,9 @@ const Dashboard: React.FC = () => {
       setLoading(true);
       setError(null);
 
+      // 디버깅: supabaseAdmin 객체 확인
+      console.log('🔍 Using supabaseAdmin:', supabaseAdmin !== supabase ? 'Admin Client' : 'Anon Client');
+
       // 병렬로 모든 데이터 가져오기 (관리자 클라이언트 사용하여 RLS 우회)
       const [
         { data: surveyData, error: surveyError },
@@ -206,6 +209,13 @@ const Dashboard: React.FC = () => {
         supabaseAdmin.from('software_assignments').select('user_email').eq('is_active', true),
         getAllGWSUsers()
       ]);
+
+      // 디버깅: 실제 반환된 데이터 확인
+      console.log('🔍 실제 software_survey_responses 데이터:', {
+        data: softwareSurveyData,
+        error: softwareSurveyError,
+        count: softwareSurveyData?.length
+      });
 
       if (surveyError) throw surveyError;
       if (gwsSurveyError && gwsSurveyError.code !== 'PGRST116') throw gwsSurveyError;

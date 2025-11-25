@@ -20,8 +20,9 @@ interface CategoryData {
 
 interface ProductUsage {
   frequency: string;
-  satisfaction: number;
+  satisfaction?: number; // 사용 안함 (기존 데이터 호환성 유지)
   features: string[];
+  returnIntention?: boolean; // "거의 사용 안함" 선택 시 반납 의사
 }
 
 const FREQUENCY_OPTIONS = [
@@ -55,6 +56,13 @@ const SoftwareSurvey: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Return intention modal states
+  const [showReturnModal, setShowReturnModal] = useState(false);
+  const [returnModalContext, setReturnModalContext] = useState<{
+    category: string;
+    product: string;
+  } | null>(null);
 
   useEffect(() => {
     const loadSoftwareData = async () => {
@@ -118,6 +126,13 @@ const SoftwareSurvey: React.FC = () => {
     field: keyof ProductUsage,
     value: string | number | string[]
   ) => {
+    // "거의 사용 안함" 선택 시 반납 의사 확인 모달 표시
+    if (field === 'frequency' && value === 'rarely') {
+      setReturnModalContext({ category, product });
+      setShowReturnModal(true);
+      return;
+    }
+
     setProductUsageData(prev => ({
       ...prev,
       [category]: {
@@ -128,6 +143,34 @@ const SoftwareSurvey: React.FC = () => {
         } as ProductUsage
       }
     }));
+  };
+
+  // 반납 의사 확인 후 처리
+  const handleReturnIntention = (willReturn: boolean) => {
+    if (!returnModalContext) return;
+
+    const { category, product } = returnModalContext;
+
+    setProductUsageData(prev => ({
+      ...prev,
+      [category]: {
+        ...prev[category],
+        [product]: {
+          ...prev[category]?.[product],
+          frequency: 'rarely',
+          returnIntention: willReturn
+        } as ProductUsage
+      }
+    }));
+
+    setShowReturnModal(false);
+    setReturnModalContext(null);
+  };
+
+  // 모달 취소 시 (빈도 선택 취소)
+  const handleReturnModalCancel = () => {
+    setShowReturnModal(false);
+    setReturnModalContext(null);
   };
 
   // 폼 검증: 모든 카테고리의 필수값이 입력되었는지 확인
@@ -293,6 +336,21 @@ const SoftwareSurvey: React.FC = () => {
         usageInfo: productUsageData[category] || {},
         comments: generalComments
       }));
+
+      // 제출 데이터 확인 (디버깅용)
+      console.log('📝 제출 데이터 확인:');
+      console.log('사용자:', user.email);
+      console.log('응답 데이터:', JSON.stringify(responses, null, 2));
+
+      // returnIntention 필드 확인
+      responses.forEach((response, idx) => {
+        console.log(`\n카테고리 ${idx + 1}: ${response.category}`);
+        Object.entries(response.usageInfo || {}).forEach(([product, info]) => {
+          if (info.returnIntention !== undefined) {
+            console.log(`  ✅ ${product} - returnIntention: ${info.returnIntention}`);
+          }
+        });
+      });
 
       await submitSoftwareSurvey(user.email, responses);
       setIsSubmitted(true);
@@ -496,33 +554,36 @@ const SoftwareSurvey: React.FC = () => {
                                     </select>
                                   </div>
 
-                                  {/* Satisfaction */}
-                                  <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                      만족도:{' '}
-                                      {productUsageData[activeCategory]?.[product]?.satisfaction ||
-                                        5}
-                                      /10
-                                    </label>
-                                    <input
-                                      type="range"
-                                      min="1"
-                                      max="10"
-                                      value={
-                                        productUsageData[activeCategory]?.[product]?.satisfaction ||
-                                        5
-                                      }
-                                      onChange={(e) =>
-                                        handleProductUsageChange(
-                                          activeCategory,
-                                          product,
-                                          'satisfaction',
-                                          Number(e.target.value)
-                                        )
-                                      }
-                                      className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
-                                    />
-                                  </div>
+                                  {/* Return Intention - 반납 의사 표시 */}
+                                  {productUsageData[activeCategory]?.[product]?.frequency === 'rarely' &&
+                                   productUsageData[activeCategory]?.[product]?.returnIntention !== undefined && (
+                                    <div className="pt-2">
+                                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                        반납 의사
+                                      </label>
+                                      <div className="flex items-center gap-2">
+                                        {productUsageData[activeCategory]?.[product]?.returnIntention === true ? (
+                                          <span className="inline-flex items-center px-3 py-1.5 rounded-lg text-sm font-medium bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300 border border-orange-300 dark:border-orange-700">
+                                            ✓ 반납 예정
+                                          </span>
+                                        ) : (
+                                          <span className="inline-flex items-center px-3 py-1.5 rounded-lg text-sm font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 border border-green-300 dark:border-green-700">
+                                            ✗ 유지
+                                          </span>
+                                        )}
+                                        <button
+                                          type="button"
+                                          onClick={() => {
+                                            setReturnModalContext({ category: activeCategory, product });
+                                            setShowReturnModal(true);
+                                          }}
+                                          className="text-xs text-blue-600 dark:text-blue-400 hover:underline"
+                                        >
+                                          변경
+                                        </button>
+                                      </div>
+                                    </div>
+                                  )}
                                 </div>
                               )}
                             </div>
@@ -605,6 +666,52 @@ const SoftwareSurvey: React.FC = () => {
               </div>
             </form>
           </Card>
+
+          {/* 반납 의사 확인 모달 */}
+          {showReturnModal && returnModalContext && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full mx-4"
+              >
+                <div className="p-6">
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
+                    💡 라이선스 반납 의사 확인
+                  </h3>
+                  <p className="text-gray-700 dark:text-gray-300 mb-2">
+                    <strong>{returnModalContext.product}</strong>를 거의 사용하지 않으신다고 하셨습니다.
+                  </p>
+                  <p className="text-gray-600 dark:text-gray-400 mb-6">
+                    해당 라이선스를 반납하시겠습니까?
+                  </p>
+
+                  <div className="flex gap-3">
+                    <Button
+                      variant="outline"
+                      onClick={handleReturnModalCancel}
+                      className="flex-1"
+                    >
+                      취소
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => handleReturnIntention(false)}
+                      className="flex-1 bg-yellow-50 hover:bg-yellow-100 dark:bg-yellow-900/20 dark:hover:bg-yellow-900/30 border-yellow-300 dark:border-yellow-700 text-yellow-700 dark:text-yellow-300"
+                    >
+                      아니요, 유지
+                    </Button>
+                    <Button
+                      onClick={() => handleReturnIntention(true)}
+                      className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
+                    >
+                      예, 반납
+                    </Button>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+          )}
         </motion.div>
       </div>
     </div>

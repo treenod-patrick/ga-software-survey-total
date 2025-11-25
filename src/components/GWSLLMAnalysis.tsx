@@ -174,7 +174,7 @@ export const GWSLLMAnalysis: React.FC = () => {
           LLM 분석 진행 중...
         </h3>
         <p className="text-gray-600 dark:text-gray-300">
-          GPT-4o가 설문 데이터를 분석하고 있습니다. 잠시만 기다려주세요.
+          AI가 설문 데이터를 분석하고 있습니다. 잠시만 기다려주세요.
         </p>
       </Card>
     );
