@@ -17,6 +17,12 @@ if (!supabaseUrl || !supabaseAnonKey) {
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 // service_role 키로 관리자 클라이언트 생성 (RLS 우회, 대시보드 전용)
+console.log('🔑 Supabase Admin 초기화:', {
+  hasServiceKey: !!supabaseServiceKey,
+  serviceKeyPrefix: supabaseServiceKey ? supabaseServiceKey.substring(0, 20) + '...' : 'undefined',
+  usingAdmin: !!supabaseServiceKey
+});
+
 export const supabaseAdmin = supabaseServiceKey
   ? createClient(supabaseUrl, supabaseServiceKey)
   : supabase;
