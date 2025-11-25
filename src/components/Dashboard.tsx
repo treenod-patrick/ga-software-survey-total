@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { supabase } from '../lib/supabase';
+import { supabase, supabaseAdmin } from '../lib/supabase';
 import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { GWSLLMAnalysis } from './GWSLLMAnalysis';
 import { SoftwareLLMAnalysis } from './SoftwareLLMAnalysis';
-import { TrendingDown, TrendingUp, DollarSign, AlertCircle, Users, UserCheck, UserX, Filter, X } from 'lucide-react';
+import { TrendingDown, TrendingUp, DollarSign, AlertCircle, Users, UserCheck, UserX, Filter, X, AlertTriangle } from 'lucide-react';
 import { getAllGWSUsers } from '../lib/gwsData';
 
 interface SurveyResponse {
@@ -71,6 +71,12 @@ interface Stats {
     notParticipated: string[];
     participationRate: number;
   };
+  // 거의 사용 안함 응답자 (라이센스 반납 대상)
+  rarelyUsedSoftware: {
+    email: string;
+    software: string;
+    category: string;
+  }[];
 }
 
 const Dashboard: React.FC = () => {
@@ -84,8 +90,10 @@ const Dashboard: React.FC = () => {
   // 필터 상태
   const [selectedSoftware, setSelectedSoftware] = useState<string>('');
   const [selectedFrequency, setSelectedFrequency] = useState<string>('');
+  const [selectedReturnIntention, setSelectedReturnIntention] = useState<string>(''); // 반납 의사 필터
   const [showFilteredResults, setShowFilteredResults] = useState(false);
-  const [filteredUsers, setFilteredUsers] = useState<{email: string; software: string; frequency: string}[]>([]);
+  const [filteredUsers, setFilteredUsers] = useState<{email: string; software: string; frequency: string; returnIntention?: boolean}[]>([]);
+  const [userComments, setUserComments] = useState<{email: string; comments: string; submittedAt: string}[]>([]);
 
   useEffect(() => {
     fetchDashboardData();
@@ -93,40 +101,55 @@ const Dashboard: React.FC = () => {
 
   // 필터 적용 함수
   const applyFilter = async () => {
-    if (!selectedSoftware && !selectedFrequency) {
-      alert('소프트웨어 또는 빈도를 선택해주세요.');
+    if (!selectedSoftware && !selectedFrequency && !selectedReturnIntention) {
+      alert('소프트웨어, 빈도 또는 반납 의사를 선택해주세요.');
       return;
     }
 
     setLoading(true);
     try {
-      const { data: softwareSurveyData, error } = await supabase
+      const { data: softwareSurveyData, error } = await supabaseAdmin
         .from('software_survey_responses')
         .select('*');
 
       if (error) throw error;
 
-      const results: {email: string; software: string; frequency: string}[] = [];
+      const results: {email: string; software: string; frequency: string; returnIntention?: boolean}[] = [];
+      const commentsMap = new Map<string, {comments: string; submittedAt: string}>();
 
       softwareSurveyData?.forEach(response => {
         if (response.category_responses && Array.isArray(response.category_responses)) {
           response.category_responses.forEach((categoryResponse: any) => {
+            // 추가 의견 수집 (중복 제거)
+            if (categoryResponse.comments && !commentsMap.has(response.user_email)) {
+              commentsMap.set(response.user_email, {
+                comments: categoryResponse.comments,
+                submittedAt: response.submitted_at || new Date().toISOString()
+              });
+            }
+
             // products 배열과 usageInfo 객체를 함께 사용
             if (categoryResponse.products && Array.isArray(categoryResponse.products)) {
               categoryResponse.products.forEach((productName: string) => {
-                // usageInfo에서 실제 빈도 정보 가져오기
+                // usageInfo에서 실제 빈도 및 반납 의사 정보 가져오기
                 const usageInfo = categoryResponse.usageInfo?.[productName];
                 const frequency = usageInfo?.frequency || 'unknown';
+                const returnIntention = usageInfo?.returnIntention;
 
                 // 필터 조건 확인
                 const matchesSoftware = !selectedSoftware || productName === selectedSoftware;
                 const matchesFrequency = !selectedFrequency || frequency === selectedFrequency;
+                const matchesReturnIntention = !selectedReturnIntention ||
+                  (selectedReturnIntention === 'yes' && returnIntention === true) ||
+                  (selectedReturnIntention === 'no' && returnIntention === false) ||
+                  (selectedReturnIntention === 'unknown' && returnIntention === undefined);
 
-                if (matchesSoftware && matchesFrequency) {
+                if (matchesSoftware && matchesFrequency && matchesReturnIntention) {
                   results.push({
                     email: response.user_email,
                     software: productName,
-                    frequency: frequency
+                    frequency: frequency,
+                    returnIntention: returnIntention
                   });
                 }
               });
@@ -136,6 +159,15 @@ const Dashboard: React.FC = () => {
       });
 
       setFilteredUsers(results);
+
+      // 추가 의견을 배열로 변환
+      const commentsArray = Array.from(commentsMap.entries()).map(([email, data]) => ({
+        email,
+        comments: data.comments,
+        submittedAt: data.submittedAt
+      }));
+      setUserComments(commentsArray);
+
       setShowFilteredResults(true);
     } catch (error) {
       console.error('필터링 중 오류:', error);
@@ -149,8 +181,10 @@ const Dashboard: React.FC = () => {
   const resetFilter = () => {
     setSelectedSoftware('');
     setSelectedFrequency('');
+    setSelectedReturnIntention('');
     setShowFilteredResults(false);
     setFilteredUsers([]);
+    setUserComments([]);
   };
 
   const fetchDashboardData = async () => {
@@ -158,7 +192,7 @@ const Dashboard: React.FC = () => {
       setLoading(true);
       setError(null);
 
-      // 병렬로 모든 데이터 가져오기
+      // 병렬로 모든 데이터 가져오기 (관리자 클라이언트 사용하여 RLS 우회)
       const [
         { data: surveyData, error: surveyError },
         { data: gwsSurveyData, error: gwsSurveyError },
@@ -166,10 +200,10 @@ const Dashboard: React.FC = () => {
         { data: softwareAssignmentsData, error: softwareAssignmentsError },
         gwsUsers
       ] = await Promise.all([
-        supabase.from('survey_responses').select('*'),
-        supabase.from('gws_survey_responses').select('*'),
-        supabase.from('software_survey_responses').select('*'),
-        supabase.from('software_assignments').select('user_email').eq('is_active', true),
+        supabaseAdmin.from('survey_responses').select('*'),
+        supabaseAdmin.from('gws_survey_responses').select('*'),
+        supabaseAdmin.from('software_survey_responses').select('*'),
+        supabaseAdmin.from('software_assignments').select('user_email').eq('is_active', true),
         getAllGWSUsers()
       ]);
 
@@ -384,6 +418,33 @@ const Dashboard: React.FC = () => {
           : 0
       };
 
+      // 거의 사용 안함으로 응답한 소프트웨어 추출 (라이센스 반납 대상)
+      const rarelyUsedSoftware: { email: string; software: string; category: string }[] = [];
+
+      softwareSurveyResponses.forEach(response => {
+        if (response.category_responses && Array.isArray(response.category_responses)) {
+          response.category_responses.forEach((categoryResponse: any) => {
+            const categoryName = categoryResponse.category || 'unknown';
+
+            if (categoryResponse.products && Array.isArray(categoryResponse.products)) {
+              categoryResponse.products.forEach((productName: string) => {
+                const usageInfo = categoryResponse.usageInfo?.[productName];
+                const frequency = usageInfo?.frequency;
+
+                // 거의 사용 안함으로 응답한 경우
+                if (frequency === 'rarely') {
+                  rarelyUsedSoftware.push({
+                    email: response.user_email,
+                    software: productName,
+                    category: categoryName
+                  });
+                }
+              });
+            }
+          });
+        }
+      });
+
       setStats({
         totalResponses: surveyResponses.length,
         gwsResponses: gwsResponses.length,
@@ -395,7 +456,8 @@ const Dashboard: React.FC = () => {
         userSoftwareDetails,
         gwsSurveyStats,
         gwsParticipation,
-        softwareParticipation
+        softwareParticipation,
+        rarelyUsedSoftware
       });
 
     } catch (error: any) {
@@ -754,6 +816,21 @@ const Dashboard: React.FC = () => {
                   </select>
                 </div>
 
+                {/* 반납 의사 선택 */}
+                <div>
+                  <label className="block text-sm font-medium mb-2">반납 의사</label>
+                  <select
+                    value={selectedReturnIntention}
+                    onChange={(e) => setSelectedReturnIntention(e.target.value)}
+                    className="w-full px-4 py-2 rounded bg-white text-gray-900 border-0 focus:ring-2 focus:ring-purple-300"
+                  >
+                    <option value="">전체</option>
+                    <option value="yes">반납 예정</option>
+                    <option value="no">유지</option>
+                    <option value="unknown">미응답</option>
+                  </select>
+                </div>
+
                 {/* 필터 버튼 */}
                 <div className="flex items-end space-x-2">
                   <button
@@ -792,6 +869,7 @@ const Dashboard: React.FC = () => {
                             <th className="px-4 py-2 text-left text-sm font-medium">사용자 이메일</th>
                             <th className="px-4 py-2 text-left text-sm font-medium">소프트웨어</th>
                             <th className="px-4 py-2 text-left text-sm font-medium">사용 빈도</th>
+                            <th className="px-4 py-2 text-left text-sm font-medium">반납 의사</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-white/10">
@@ -815,6 +893,17 @@ const Dashboard: React.FC = () => {
                                    '알 수 없음'}
                                 </span>
                               </td>
+                              <td className="px-4 py-2 text-sm">
+                                <span className={`inline-block px-2 py-1 rounded text-xs font-medium ${
+                                  user.returnIntention === true ? 'bg-orange-400 text-orange-900' :
+                                  user.returnIntention === false ? 'bg-green-400 text-green-900' :
+                                  'bg-gray-400 text-gray-900'
+                                }`}>
+                                  {user.returnIntention === true ? '✓ 반납 예정' :
+                                   user.returnIntention === false ? '✗ 유지' :
+                                   '-'}
+                                </span>
+                              </td>
                             </tr>
                           ))}
                         </tbody>
@@ -828,6 +917,79 @@ const Dashboard: React.FC = () => {
                 </div>
               )}
             </div>
+
+            {/* 추가 의견 섹션 */}
+            {userComments.length > 0 && (
+              <div className="bg-gradient-to-r from-teal-500 to-cyan-600 text-white p-6 rounded-lg shadow-lg">
+                <div className="flex items-center mb-4">
+                  <AlertCircle className="w-6 h-6 mr-2" />
+                  <h3 className="text-xl font-bold">추가 의견</h3>
+                </div>
+                <div className="bg-white bg-opacity-20 rounded-lg p-4 mb-4">
+                  <p className="text-lg font-semibold">총 {userComments.length}건의 추가 의견</p>
+                  <p className="text-sm mt-1 opacity-90">설문 참여자들이 작성한 추가 의견입니다.</p>
+                </div>
+                <div className="bg-white rounded-lg p-4 max-h-96 overflow-y-auto">
+                  <div className="space-y-3">
+                    {userComments.map((comment, idx) => (
+                      <div key={idx} className="border-l-4 border-teal-500 pl-4 py-2 bg-gray-50 rounded">
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="text-sm font-bold text-gray-900">{comment.email}</span>
+                          <span className="text-xs text-gray-500">
+                            {new Date(comment.submittedAt).toLocaleDateString('ko-KR')}
+                          </span>
+                        </div>
+                        <p className="text-sm text-gray-700">{comment.comments}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* 라이센스 반납 대상자 (거의 사용 안함) */}
+            {stats.rarelyUsedSoftware.length > 0 && (
+              <div className="bg-gradient-to-r from-red-500 to-orange-600 text-white p-6 rounded-lg shadow-lg">
+                <div className="flex items-center mb-4">
+                  <AlertTriangle className="w-6 h-6 mr-2" />
+                  <h3 className="text-xl font-bold">라이센스 반납 대상자 (거의 사용 안함)</h3>
+                </div>
+                <div className="bg-white bg-opacity-20 rounded-lg p-4 mb-4">
+                  <p className="text-lg font-semibold">총 {stats.rarelyUsedSoftware.length}건의 라이센스 반납 예정</p>
+                  <p className="text-sm mt-1 opacity-90">아래 사용자들은 해당 소프트웨어를 "거의 사용 안함"으로 응답했습니다.</p>
+                </div>
+                <div className="bg-white rounded-lg p-4 max-h-96 overflow-y-auto">
+                  <table className="min-w-full">
+                    <thead className="bg-gray-100 sticky top-0">
+                      <tr>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                          순번
+                        </th>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                          사용자 이메일
+                        </th>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                          소프트웨어
+                        </th>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                          카테고리
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200">
+                      {stats.rarelyUsedSoftware.map((item, idx) => (
+                        <tr key={idx} className="hover:bg-gray-50">
+                          <td className="px-4 py-3 text-sm text-gray-900">{idx + 1}</td>
+                          <td className="px-4 py-3 text-sm text-gray-900">{item.email}</td>
+                          <td className="px-4 py-3 text-sm font-medium text-gray-900">{item.software}</td>
+                          <td className="px-4 py-3 text-sm text-gray-600">{item.category}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
 
             {/* 참여 현황 테이블 */}
             <div className="bg-white p-6 rounded-lg shadow">

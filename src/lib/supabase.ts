@@ -2,6 +2,7 @@ import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = process.env.REACT_APP_SUPABASE_URL;
 const supabaseAnonKey = process.env.REACT_APP_SUPABASE_ANON_KEY;
+const supabaseServiceKey = process.env.REACT_APP_SUPABASE_SERVICE_KEY;
 
 if (!supabaseUrl || !supabaseAnonKey) {
   console.error('⚠️ Supabase configuration missing! Please check your .env.local file.');
@@ -12,7 +13,13 @@ if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error('Supabase configuration is required. Please add REACT_APP_SUPABASE_URL and REACT_APP_SUPABASE_ANON_KEY to your .env.local file.');
 }
 
+// anon 키로 기본 클라이언트 생성
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+// service_role 키로 관리자 클라이언트 생성 (RLS 우회, 대시보드 전용)
+export const supabaseAdmin = supabaseServiceKey
+  ? createClient(supabaseUrl, supabaseServiceKey)
+  : supabase;
 
 // 소프트웨어 목록
 export const SOFTWARE_LIST = [
